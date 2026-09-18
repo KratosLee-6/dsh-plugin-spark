@@ -1,0 +1,18 @@
+name: A new spark / 新的闪光点
+description: Suggest a useful Skill connection / 提议一个有价值的技能连接
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What user task would this help? / 它帮助完成什么任务？
+    validations:
+      required: true
+  - type: textarea
+    id: contracts
+    attributes:
+      label: Skill A, Skill B, expected output / 双方技能与预期产出
+      description: Synthetic examples only. / 仅使用合成示例。
+  - type: textarea
+    id: verification
+    attributes:
+      label: How would we know it works? / 如何验收？

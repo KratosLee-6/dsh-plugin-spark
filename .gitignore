@@ -1,0 +1,17 @@
+node_modules/
+dist/
+.spark/
+.test-data/
+coverage/
+test-results/
+playwright-report/
+*.tgz
+*.db
+*.db-shm
+*.db-wal
+.env
+.env.*
+spark.patch.yml
+.host-test.patch.yml
+.host-test/
+*.log

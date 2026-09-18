@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="spark-token" content="{{SPARK_TOKEN}}" />
+    <meta name="theme-color" content="#f4f7fb" />
+    <title>Spark — Let skills grow</title>
+    <link rel="icon" href="/mark.svg" />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#workspace">Skip to workspace / 跳至工作区</a>
+    <header class="topbar">
+      <a class="brand" href="/"
+        ><img src="/mark.svg" alt="" width="34" height="34" /><span
+          >Spark<span class="brand-sub">SKILL STUDIO</span></span
+        ></a
+      >
+      <div class="header-right">
+        <span class="local"
+          ><i></i><span data-i18n="local">Local by design</span></span
+        ><button
+          id="language"
+          class="quiet"
+          aria-label="Switch language / 切换语言"
+        >
+          中文</button
+        ><a
+          class="repo"
+          href="https://github.com/KratosLee-6/dsh-plugin-spark"
+          target="_blank"
+          rel="noreferrer"
+          >GitHub ↗</a
+        >
+      </div>
+    </header>
+    <main>
+      <section class="hero">
+        <div class="eyebrow">
+          <span class="tiny-star">✦</span> DEEPSEEK HARNESS PLUGIN
+          <span class="version">v0.1</span>
+        </div>
+        <h1 data-i18n="headline">
+          Good skills.<br />A little more possibility.
+        </h1>
+        <p data-i18n="intro">
+          Bring two skills together. See what connects.<br />Grow something
+          worth trying.
+        </p>
+        <div class="hero-tags">
+          <span data-i18n="tag1">Local-first</span
+          ><span data-i18n="tag2">Traceable by default</span
+          ><span data-i18n="tag3">Made to compose</span>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="orbit one"></div>
+          <div class="orbit two"></div>
+          <div class="art-orb left-orb">↗</div>
+          <div class="art-orb right-orb">⌘</div>
+          <div class="art-spark">✦</div>
+          <span class="art-caption">1 + 1 → possibility</span>
+        </div>
+      </section>
+      <section id="workspace" class="workspace" aria-label="Skill workspace">
+        <aside class="library">
+          <div class="section-heading">
+            <div>
+              <span class="overline" data-i18n="collection"
+                >YOUR INGREDIENTS</span
+              >
+              <h2 data-i18n="library">Skill library</h2>
+            </div>
+            <span id="count" class="count">4</span>
+          </div>
+          <label class="search-label"
+            ><span aria-hidden="true">⌕</span
+            ><input
+              id="search"
+              type="search"
+              placeholder="Find a skill…"
+              aria-label="Search skills"
+          /></label>
+          <div id="skills" class="skill-list"></div>
+          <button id="import-open" class="import-button" data-i18n="import">
+            ＋ Import a Skill
+          </button>
+          <p class="library-note" data-i18n="synthetic">
+            Four original examples to start.<br />Your own skills stay on this
+            device.
+          </p>
+        </aside>
+        <div class="lab">
+          <div class="section-heading">
+            <div>
+              <span class="overline" data-i18n="playground"
+                >THE PLAYGROUND</span
+              >
+              <h2 data-i18n="collision">A spark starts here.</h2>
+            </div>
+            <span class="pill" data-i18n="rule"
+              >Rule-based · no model needed</span
+            >
+          </div>
+          <div id="stage" class="stage">
+            <svg
+              class="connection"
+              viewBox="0 0 600 200"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path d="M140 100 C230 100 240 100 300 100 S390 100 460 100" />
+            </svg>
+            <div class="slot a">
+              <label for="first" data-i18n="first">01 · START WITH</label>
+              <div class="slot-icon">↗</div>
+              <select id="first" aria-label="First skill"></select
+              ><span id="first-output" class="contract"></span>
+            </div>
+            <div class="nucleus" aria-hidden="true"><span>✦</span><i></i></div>
+            <div class="slot b">
+              <label for="second" data-i18n="second">02 · BRING IN</label>
+              <div class="slot-icon">⌘</div>
+              <select id="second" aria-label="Second skill"></select
+              ><span id="second-input" class="contract"></span>
+            </div>
+          </div>
+          <div class="goal-row">
+            <label for="goal" data-i18n="goalLabel"
+              >What would you like to make?</label
+            ><textarea id="goal" rows="2" maxlength="1000">
+Turn research into an accessible prototype people can test.</textarea>
+          </div>
+          <div class="action-row">
+            <p id="hint" data-i18n="hint">
+              A small experiment. A new direction.
+            </p>
+            <button id="collide" class="primary">
+              <span data-i18n="collide">Create a spark</span
+              ><span aria-hidden="true">✦</span></button
+            ><button id="cancel" class="quiet" hidden data-i18n="cancel">
+              Cancel
+            </button>
+          </div>
+          <section
+            id="result"
+            class="result"
+            aria-labelledby="result-title"
+            hidden
+          ></section>
+          <div id="empty-result" class="empty-result">
+            <div class="empty-symbol" aria-hidden="true">✧</div>
+            <div>
+              <strong data-i18n="emptyTitle">Room for something new.</strong>
+              <p data-i18n="emptyBody">
+                Your connection, missing pieces and next steps will appear here.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="garden">
+        <div class="section-heading">
+          <div>
+            <span class="overline" data-i18n="gardenOver"
+              >IDEAS WITH ROOTS</span
+            >
+            <h2 data-i18n="garden">Your growing collection</h2>
+          </div>
+          <span class="subtle" data-i18n="gardenNote"
+            >Every spark remembers where it began.</span
+          >
+        </div>
+        <div id="history" class="history"></div>
+      </section>
+      <footer>
+        <span
+          >Spark <span class="tiny-star">✦</span>
+          <span data-i18n="footer"
+            >Let skills meet, collide, and grow.</span
+          ></span
+        ><span data-i18n="studioNote"
+          >Companion Studio · same engine as the DSH tools</span
+        >
+      </footer>
+    </main>
+    <div id="status" role="status" aria-live="polite"></div>
+    <dialog id="import-dialog">
+      <form id="import-form">
+        <div class="section-heading">
+          <h2 data-i18n="importTitle">Bring your own Skill</h2>
+          <button
+            type="button"
+            id="import-close"
+            class="quiet"
+            aria-label="Close / 关闭"
+          >
+            ×
+          </button>
+        </div>
+        <p data-i18n="importHelp">
+          Paste a structured Skill JSON. Imported instructions are stored as
+          data, never executed.
+        </p>
+        <textarea
+          id="import-json"
+          rows="13"
+          aria-label="Skill JSON"
+          required
+          spellcheck="false"
+        ></textarea>
+        <p id="import-error" role="alert"></p>
+        <button class="primary" type="submit" data-i18n="importSubmit">
+          Import locally
+        </button>
+      </form>
+    </dialog>
+    <script type="module" src="/studio.js"></script>
+  </body>
+</html>

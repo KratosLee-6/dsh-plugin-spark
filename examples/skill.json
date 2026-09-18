@@ -1,0 +1,11 @@
+{
+  "id": "decision-map",
+  "name": "Decision Map / 决策地图",
+  "description": "Turn an evidence brief into a small decision map. / 将证据简报整理为可审阅的决策地图。",
+  "inputs": ["evidence-brief"],
+  "outputs": ["decision-map"],
+  "steps": ["List supported options. / 列出有依据的选项。", "Attach evidence and uncertainty to each option. / 为每个选项标明依据和不确定性。", "Define one reversible next step. / 设计一个可逆的下一步。"],
+  "constraints": ["Do not invent supporting evidence. / 不编造支撑材料。", "Ask a human to review the trade-offs. / 由人审阅取舍。"],
+  "tags": ["planning", "规划"],
+  "parents": []
+}

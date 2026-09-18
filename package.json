@@ -1,0 +1,80 @@
+{
+  "name": "dsh-plugin-spark",
+  "version": "0.1.0",
+  "description": "Let skills meet, collide, and grow. Local-first skill composition for DeepSeek Harness.",
+  "type": "module",
+  "license": "MIT",
+  "author": "KratosLee-6",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KratosLee-6/dsh-plugin-spark.git"
+  },
+  "homepage": "https://github.com/KratosLee-6/dsh-plugin-spark#readme",
+  "bugs": {
+    "url": "https://github.com/KratosLee-6/dsh-plugin-spark/issues"
+  },
+  "keywords": [
+    "dsh-plugin",
+    "deepseek-harness",
+    "skills",
+    "local-first"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core.d.ts",
+      "default": "./dist/core.js"
+    }
+  },
+  "bin": {
+    "spark": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "studio",
+    "examples",
+    "README.md",
+    "README.zh-CN.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "playwright test",
+    "studio": "node dist/cli.js studio",
+    "check": "npm run typecheck && npm run test:coverage && npm run build",
+    "prepack": "npm run build",
+    "verify:release": "node scripts/verify-release.mjs",
+    "test:host": "node scripts/host-smoke.mjs",
+    "format": "prettier --write src studio tests scripts *.json *.ts .github",
+    "format:check": "prettier --check src studio tests scripts *.json *.ts .github"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "4.0.2",
+    "@deepseek-ai/dsh-tools": "0.1.5-rc.2"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@deepseek-ai/cordis": "4.0.2",
+    "@deepseek-ai/dsh": "0.1.5-rc.2",
+    "@deepseek-ai/dsh-system-prompt": "0.1.5-rc.2",
+    "@deepseek-ai/dsh-tools": "0.1.5-rc.2",
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.1",
+    "@vitest/coverage-v8": "5.0.1",
+    "prettier": "3.9.8",
+    "typescript": "7.0.2",
+    "vitest": "5.0.1"
+  }
+}
