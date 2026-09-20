@@ -137,3 +137,26 @@ it.each([{ dataDir: "" }, { seedExamples: "yes" }])(
     await expect(host(config as spark.Config)).rejects.toThrow();
   },
 );
+it("previews Markdown through DSH without importing or executing instructions", async () => {
+  const { ctx, call, plugin } = await host();
+  expect(ctx.tools.get("spark_preview_import")).toBeDefined();
+  const result = await call("spark_preview_import", {
+    markdown:
+      "---\nname: never-imported\ndescription: Preview\n---\n<script>alert(1)</script>",
+  });
+  expect(result.isError).toBe(false);
+  const preview = JSON.parse((result.content[0] as { text: string }).text);
+  expect(preview.valid).toBe(false);
+  expect(preview.unparsed[0].text).toContain("<script>");
+  expect((await call("spark_inspect", { id: "never-imported" })).isError).toBe(
+    true,
+  );
+  const abort = new AbortController();
+  abort.abort();
+  expect(
+    (await call("spark_preview_import", { markdown: "# Draft" }, abort.signal))
+      .isError,
+  ).toBe(true);
+  await plugin.dispose();
+  expect(ctx.tools.get("spark_preview_import")).toBeUndefined();
+});

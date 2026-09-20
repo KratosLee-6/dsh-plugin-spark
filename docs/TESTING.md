@@ -1,12 +1,12 @@
 # Test evidence / 测试证据
 
-Evidence date / 记录日期: 2026-09-18. Version / 版本: 0.1.0.
+Evidence date / 记录日期: 2026-09-20. Version / 版本: 0.2.0.
 
 ## Environment / 环境
 
 Local verification: Windows, Node.js 24.15.0, Microsoft Edge 153.0.4234.32. The pinned host is @deepseek-ai/dsh 0.1.5-rc.2, with @deepseek-ai/dsh-tools 0.1.5-rc.2 and @deepseek-ai/cordis 4.0.2.
 
-本地验证环境为 Windows、Node.js 24.15.0、Edge 153.0.4234.32。DSH 与工具包锁定 0.1.5-rc.2，Cordis 锁定 4.0.2。CI 配置了 Windows/Linux 与 Node 22.19/24 的核心测试；配置存在不代表这些远程作业已经通过，请查看仓库 Actions 的实际记录。
+本地验证环境为 Windows、Node.js 24.15.0、Edge 153.0.4234.32。DSH 与工具包锁定 0.1.5-rc.2，Cordis 锁定 4.0.2。v0.1 的 Windows/Linux、Node 22.19/24 CI 已通过（运行编号 35359695989）。v0.2 的远程结果以对应提交的 Actions 记录为准。
 
 ## Reproduce / 复现
 
@@ -35,15 +35,15 @@ npm run test:ui
 | Check / 检查                      | Result / 结果                                                    | Scope / 范围                                                                                       |
 | --------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | TypeScript                        | Passed / 通过                                                    | Static types and build / 静态类型与构建                                                            |
-| Core and integration / 核心与集成 | 37 tests, 4 files / 37 项、4 个文件                              | Contracts, composition, persistence, plugin lifecycle, HTTP / 契约、组合、存储、插件生命周期、HTTP |
-| Browser / 浏览器                  | 5 tests / 5 项                                                   | Desktop and 390px layouts, bilingual flows / 桌面、390px、双语流程                                 |
+| Core and integration / 核心与集成 | 68 tests, 5 files / 68 项、5 个文件                              | Contracts, composition, persistence, plugin lifecycle, HTTP / 契约、组合、存储、插件生命周期、HTTP |
+| Browser / 浏览器                  | 8 tests / 8 项                                                   | Desktop and 390px layouts, bilingual flows / 桌面、390px、双语流程                                 |
 | Accessibility / 无障碍            | No violations in tested axe WCAG A/AA scans / 已测页面未发现违规 | Automated scan only / 仅自动扫描                                                                   |
 | DSH host / 宿主                   | Passed / 通过                                                    | Fresh isolated profile, patch load, 4 examples, HTTP 200 / 隔离配置、加载插件、4 个示例、页面响应  |
-| npm audit                         | 0 vulnerabilities reported / 未报告已知漏洞                      | Official registry at verification time / 验证时官方源数据                                          |
+| npm audit                         | 0 on 2026-09-18 / 9 月 18 日为 0                                 | v0.1 audit baseline; no dependencies changed / v0.1 审计基线，未变更依赖                           |
 
-Coverage for src/core.ts, src/store.ts, src/index.ts and src/server.ts: **98.53% statements, 97.98% branches, 94.54% functions, 98.43% lines**. CLI, examples and Studio JavaScript are outside this coverage denominator; CLI and UI have separate smoke/browser checks.
+Coverage for src/core.ts, src/store.ts, src/index.ts, src/server.ts and src/markdown.ts: **98.71% statements, 98.66% branches, 93.22% functions, 98.63% lines**. CLI, examples and Studio JavaScript are outside this coverage denominator; CLI and UI have separate smoke/browser checks.
 
-覆盖率统计仅包含上述四个核心文件：语句 98.53%、分支 97.98%、函数 94.54%、行 98.43%。CLI、示例和 Studio JavaScript 不在分母内，另有冒烟与浏览器验证。高覆盖率不等于没有缺陷。
+覆盖率统计仅包含上述五个核心文件：语句 98.71%、分支 98.66%、函数 93.22%、行 98.63%。CLI、示例和 Studio JavaScript 不在分母内，另有冒烟与浏览器验证。高覆盖率不等于没有缺陷。
 
 Browser assertions cover collision, save, growth, SKILL.md download, history after reload, cancellation, reduced motion, missing inputs, malicious HTML treated as text, and truthful save-failure feedback. Tests generate the committed [English screenshot](screenshots/studio-en.png), [Chinese screenshot](screenshots/collision-zh.png) and [mobile-width screenshot](screenshots/mobile-en.png) using synthetic examples.
 
@@ -63,3 +63,13 @@ The release verifier checks the npm archive allowlist and local documentation li
 - DSH is a developer preview. Retest pinned interfaces before upgrading. / DSH 处于开发者预览，升级前需要重新验证接口。
 
 See [architecture](ARCHITECTURE.md) and [security](../SECURITY.md) for lifecycle and trust boundaries. / 生命周期与信任边界见技术架构及安全说明。
+
+## v0.2 additions / 本次新增验证
+
+Markdown tests cover every bundled export, grown lineage/tags, multiline items, Chinese headings, BOM/CRLF, unknown and duplicate fields, unsupported YAML, inert code fences, prototype-named headings, size limits and exact-source identity. HTTP and DSH tests verify preview makes no writes and saving still requires valid contracts.
+
+新增解析测试覆盖内置导出往返、生长来源与标签、多行条目、中文标题、BOM/CRLF、未知或重复字段、不支持的 YAML、惰性代码块、原型属性同名标题、尺寸限制与原文标识。HTTP 与 DSH 测试确认预览不写库，保存仍需契约校验。
+
+Browser additions cover file selection, editable contracts, confirmation invalidation, reload persistence, imported-Skill collision, source-edit invalidation, stale failure responses, oversized files, save-failure recovery and switching back to JSON. New screenshots: [English review](screenshots/import-review-en.png), [Chinese review](screenshots/import-review-zh.png).
+
+浏览器新增覆盖选文件、编辑契约、确认失效、刷新恢复、导入后碰撞、原文变更、过期失败响应、超大文件、保存失败恢复及切回 JSON；审阅弹窗也纳入自动无障碍检查。

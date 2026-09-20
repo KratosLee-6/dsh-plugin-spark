@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-spark",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Let skills meet, collide, and grow. Local-first skill composition for DeepSeek Harness.",
   "type": "module",
   "license": "MIT",
@@ -17,7 +17,8 @@
     "dsh-plugin",
     "deepseek-harness",
     "skills",
-    "local-first"
+    "local-first",
+    "deepseek-harness-plugins"
   ],
   "engines": {
     "node": ">=22.19.0"

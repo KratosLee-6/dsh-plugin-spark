@@ -7,7 +7,7 @@
 
 **Two skills are more useful when their connection is explicit.** Spark finds declared handoffs, shows what is missing, keeps both sets of constraints, and turns a saved composition into a new Skill draft that can participate in the next collision.
 
-> v0.1.0 is a **deterministic composition workbench**, not an autonomous skill executor or an AI discovery benchmark. A matching label is a lead to investigate, not proof of compatibility. Studio is a standalone companion UI using the same engine as the DSH tools; the screenshot is not an embedded DSH panel.
+> v0.2.0 is a **deterministic composition workbench**, not an autonomous skill executor or an AI discovery benchmark. A matching label is a lead to investigate, not proof of compatibility. Studio is a standalone companion UI using the same engine as the DSH tools; the screenshot is not an embedded DSH panel.
 
 ## What makes a spark?
 
@@ -15,7 +15,7 @@
 - **Keep the roots.** Every collision stores source snapshots, an engine version, a content fingerprint, constraints and parent IDs.
 - **Make gaps useful.** Missing downstream inputs become explicit bridge requirements, not invented success scores.
 - **Own your workspace.** SQLite on your device, no telemetry, no external fonts, no runtime CDN and no model key required for Spark's engine or Studio.
-- **Use it your way.** Six native DSH tools, a bilingual Studio, and `SKILL.md` export. A quiet, cancellable collision animation respects reduced motion; there is no navigation sound.
+- **Use it your way.** Seven native DSH tools, a bilingual Studio, and `SKILL.md` export. A quiet, cancellable collision animation respects reduced motion; there is no navigation sound.
 
 ## Quick start
 
@@ -31,7 +31,7 @@ npm run studio
 
 Open **http://127.0.0.1:4317**. Select Research Synthesis and Prototype Builder, describe a goal, then **Create a spark → Save this spark → Grow a Skill → Export SKILL.md**. Select the grown Skill as A and Accessibility Review as B to continue growing.
 
-Four original, synthetic examples are included. Import your own structured JSON from [the example contract](examples/skill.json). Existing IDs are immutable: identical imports are idempotent; changed content needs a new ID. Arbitrary Markdown/SKILL.md import is not supported in this release.
+Four original, synthetic examples are included. Import your own structured JSON from [the example contract](examples/skill.json). Existing IDs are immutable: identical imports are idempotent; changed content needs a new ID. For SKILL.md, choose Markdown, preview the mapping, fill missing contracts, and confirm the reviewed fields. Unknown content is shown explicitly and is not saved automatically. [Supported syntax and review guide](docs/IMPORT.md).
 
 ### Load into DeepSeek Harness
 
@@ -54,16 +54,25 @@ Try this prompt in your configured DSH session:
 
 **Offline boundary:** Spark tools perform local operations. DSH's conversational agent still needs a configured model. If you use a cloud model, Skill content returned to that agent can be sent to the provider. Fully offline agent use needs a separately configured compatible local model; that model path is not validated here.
 
+## Bring your existing Skills
+
+Import a local Markdown file (up to 64 KB), inspect what was mapped, and edit each contract item before saving. A source change invalidates the previous review. Preview never writes to your library. Exported Spark drafts retain tags and parent IDs when re-imported.
+
+![English reviewed Markdown import](docs/screenshots/import-review-en.png)
+
+In DSH, call `spark_preview_import` with `markdown`, show the draft and unmapped content to the user, then call `spark_import` with reviewed `skill_json` only when requested. Preview is not a security certification or proof that the Skill works.
+
 ## Tool surface
 
-| Tool | Behavior | Writes? |
-| --- | --- | --- |
-| `spark_search` | Search names, descriptions, tags and declared contracts | No |
-| `spark_inspect` | Read a Skill, constraints and lineage | No |
-| `spark_import` | Validate and import one structured Skill JSON | Yes, on request |
-| `spark_collide` | Compose A → B; report handoffs, gaps, plans and checks | Only with `save: true` |
-| `spark_grow` | Grow a saved collision into a reusable draft; return SKILL.md | Yes, on request |
-| `spark_history` | Read up to 100 saved collisions with source snapshots | No |
+| Tool                   | Behavior                                                      | Writes?                |
+| ---------------------- | ------------------------------------------------------------- | ---------------------- |
+| `spark_preview_import` | Preview SKILL.md, unmapped lines and incomplete contracts     | No                     |
+| `spark_search`         | Search names, descriptions, tags and declared contracts       | No                     |
+| `spark_inspect`        | Read a Skill, constraints and lineage                         | No                     |
+| `spark_import`         | Validate and import one structured Skill JSON                 | Yes, on request        |
+| `spark_collide`        | Compose A → B; report handoffs, gaps, plans and checks        | Only with `save: true` |
+| `spark_grow`           | Grow a saved collision into a reusable draft; return SKILL.md | Yes, on request        |
+| `spark_history`        | Read up to 100 saved collisions with source snapshots         | No                     |
 
 Language argument: `en` (default) or `zh`. Names match after Unicode NFKC normalization, trimming and case normalization. The engine does **not** infer synonyms, parse actual output formats, resolve constraint conflicts or execute Skill instructions. User goals guide the human-readable draft and its identity, not an AI planner.
 
@@ -110,7 +119,7 @@ See [test scope and evidence](docs/TESTING.md) for measured coverage, environmen
 
 Useful feedback includes a **synthetic pair of Skill contracts**, the expected handoff, what Spark reported, the host/Node version and steps to reproduce. Please avoid API keys, personal records and proprietary Skill content. See [contributing](CONTRIBUTING.md) and [security](SECURITY.md).
 
-Next candidates: reviewed Markdown import, explicit typed contract adapters, portable workspace backup/restore, optional model-assisted suggestions with evidence, and a native DSH result renderer. These are proposals, not shipped features.
+Next candidates: explicit typed contract adapters, portable workspace backup/restore, optional model-assisted suggestions with evidence, and a native DSH result renderer. These are proposals, not shipped features.
 
 [Delivery roadmap and acceptance gates](docs/ROADMAP.md).
 

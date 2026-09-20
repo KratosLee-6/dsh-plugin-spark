@@ -206,5 +206,5 @@ export function skillMarkdown(skill: Skill): string {
   const s = validateSkill(skill);
   const bullets = (items: string[]) =>
     items.map((v) => `- ${v.replaceAll("\n", "\n  ")}`).join("\n");
-  return `---\nname: ${JSON.stringify(s.id)}\ndescription: ${JSON.stringify(s.description)}\n---\n\n# ${s.name}\n\n> Unverified composition draft / 未验证的组合草案\n\n## Inputs / 输入\n${bullets(s.inputs)}\n\n## Outputs / 输出\n${bullets(s.outputs)}\n\n## Steps / 步骤\n${bullets(s.steps)}\n\n## Constraints / 约束\n${bullets(s.constraints)}\n\n## Parents / 来源\n${bullets(s.parents)}\n`;
+  return `---\nname: ${JSON.stringify(s.id)}\ndescription: ${JSON.stringify(s.description)}\n---\n\n# ${s.name}\n\n> Unverified composition draft / 未验证的组合草案\n\n## Inputs / 输入\n${bullets(s.inputs)}\n\n## Outputs / 输出\n${bullets(s.outputs)}\n\n## Steps / 步骤\n${bullets(s.steps)}\n\n## Constraints / 约束\n${bullets(s.constraints)}\n\n## Tags / 标签\n${bullets(s.tags)}\n\n## Parents / 来源\n${bullets(s.parents)}\n`;
 }

@@ -9,6 +9,28 @@ const escape = (value) =>
   );
 const copy = {
   en: {
+    sourceDocument: "Source document · stays on this device",
+    contractConstraints: "Constraints",
+    importFormat: "Source format",
+    importFile: "Open a local file · 64 KB max",
+    importPreview: "Preview contract",
+    reviewTitle: "Review the connection points",
+    reviewHelp:
+      "One box per item. Complete the missing contract. Nothing executes; only confirmed fields are saved.",
+    unmapped: "Unmapped content · not saved",
+    confirmReview: "I reviewed the contract and any unmapped content.",
+    addItem: "Add item",
+    id: "Skill ID",
+    name: "Display name",
+    description: "Description",
+    inputs: "Inputs",
+    outputs: "Outputs",
+    steps: "Steps",
+    tags: "Tags",
+    parents: "Parent IDs",
+    importTooLarge: "File must be at most 64 KB.",
+    previewRequired: "Preview and review this source before saving.",
+
     local: "Local by design",
     headline: "Good skills.<br>A little more possibility.",
     intro:
@@ -40,7 +62,7 @@ const copy = {
     studioNote: "Companion Studio · same engine as the DSH tools",
     importTitle: "Bring your own Skill",
     importHelp:
-      "Paste a structured Skill JSON. Imported instructions are stored as data, never executed.",
+      "Paste JSON to import, or preview SKILL.md and review its contract. Content stays local and never executes.",
     importSubmit: "Import locally",
     search: "Find a skill…",
     defaultGoal: "Turn research into an accessible prototype people can test.",
@@ -68,6 +90,28 @@ const copy = {
     draft: "Unverified draft",
   },
   zh: {
+    sourceDocument: "资料原文 · 留在这台设备上",
+    contractConstraints: "约束",
+    importFormat: "资料格式",
+    importFile: "打开本地文件 · 最大 64 KB",
+    importPreview: "预览技能契约",
+    reviewTitle: "看清每一个连接点",
+    reviewHelp:
+      "每个文本框代表一项，请补全缺失契约。内容不会执行，只保存确认后的字段。",
+    unmapped: "未映射的内容 · 不会保存",
+    confirmReview: "我已核对契约和未映射内容。",
+    addItem: "添加一项",
+    id: "技能编号",
+    name: "显示名称",
+    description: "技能描述",
+    inputs: "输入",
+    outputs: "输出",
+    steps: "步骤",
+    tags: "标签",
+    parents: "父级编号",
+    importTooLarge: "文件不能超过 64 KB。",
+    previewRequired: "请先预览并确认当前资料。",
+
     local: "本地运行，自在探索",
     headline: "让技能相遇，<br>让可能性生长。",
     intro:
@@ -96,7 +140,8 @@ const copy = {
     footer: "让 Skill 相遇、碰撞、生长。",
     studioNote: "独立体验工作室 · 与 DSH 工具共用核心",
     importTitle: "带入你的 Skill",
-    importHelp: "粘贴结构化 Skill JSON。技能内容只作为资料保存，不会自动执行。",
+    importHelp:
+      "粘贴 JSON，或预览 SKILL.md 并核对契约。内容留在本地，不会执行。",
     importSubmit: "导入到本地",
     search: "寻找一个技能…",
     defaultGoal: "把用户研究变成可供体验的无障碍交互原型。",
@@ -404,41 +449,208 @@ document.addEventListener("click", async (event) => {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 });
-$("import-open").addEventListener("click", () => {
+let importRevision = 0,
+  reviewedSource,
+  fileRevision = 0;
+const arrayFields = [
+  "inputs",
+  "outputs",
+  "steps",
+  "constraints",
+  "tags",
+  "parents",
+];
+function updateImportGate() {
+  $("import-save").disabled =
+    $("import-format").value === "markdown" &&
+    (reviewedSource !== $("import-json").value || !$("import-confirm").checked);
+}
+function invalidateImport() {
+  importRevision++;
+  reviewedSource = undefined;
+  $("import-source").open = true;
+  $("contract-fields").replaceChildren();
+  $("import-review").hidden = true;
+  $("import-confirm").checked = false;
   $("import-error").textContent = "";
+  $("import-preview").hidden = $("import-format").value !== "markdown";
+  $("import-preview").disabled = false;
+  $("import-json").setAttribute(
+    "aria-label",
+    $("import-format").value === "markdown" ? "SKILL.md" : "Skill JSON",
+  );
+  updateImportGate();
+}
+const fieldLabel = (field) =>
+  t(field === "constraints" ? "contractConstraints" : field);
+function addContractItem(field, value = "") {
+  const container = $("contract-" + field);
+  const index = container.querySelectorAll("textarea").length;
+  if (index >= 32 && !value) return;
+  const label = document.createElement("label");
+  label.textContent = `${fieldLabel(field)} ${index + 1}`;
+  const input = document.createElement("textarea");
+  input.rows = 2;
+  input.maxLength = 500;
+  input.value = value;
+  input.dataset.field = field;
+  label.append(input);
+  container.append(label);
+}
+function showImportPreview(data) {
+  $("import-warnings").textContent = [
+    ...data.warnings,
+    data.validationError || "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  $("import-unparsed").textContent = data.unparsed
+    .map((item) => `${item.line}: ${item.text}`)
+    .join("\n");
+  $("unmapped-details").hidden = !data.unparsed.length;
+  const fields = $("contract-fields");
+  fields.replaceChildren();
+  for (const field of ["id", "name", "description"]) {
+    const label = document.createElement("label");
+    label.textContent = t(field);
+    const input = document.createElement(
+      field === "description" ? "textarea" : "input",
+    );
+    input.id = "contract-" + field;
+    input.value = data.draft[field];
+    input.required = true;
+    input.maxLength = field === "id" ? 80 : field === "name" ? 120 : 2000;
+    label.append(input);
+    fields.append(label);
+  }
+  for (const field of arrayFields) {
+    const group = document.createElement("fieldset");
+    group.dataset.field = field;
+    const legend = document.createElement("legend");
+    legend.textContent = fieldLabel(field);
+    const container = document.createElement("div");
+    container.id = "contract-" + field;
+    const add = document.createElement("button");
+    add.type = "button";
+    add.className = "quiet";
+    add.textContent = `${t("addItem")} · ${fieldLabel(field)}`;
+    add.addEventListener("click", () => {
+      addContractItem(field);
+      $("import-confirm").checked = false;
+      updateImportGate();
+    });
+    group.append(legend, container, add);
+    fields.append(group);
+    for (const value of data.draft[field].length
+      ? data.draft[field]
+      : ["inputs", "outputs", "steps"].includes(field)
+        ? [""]
+        : [])
+      addContractItem(field, value);
+  }
+  $("import-confirm").checked = false;
+  $("import-review").hidden = false;
+  $("import-source").open = false;
+  updateImportGate();
+  $("contract-id").focus();
+}
+$("import-open").addEventListener("click", () => {
+  invalidateImport();
   $("import-dialog").showModal();
 });
 $("import-close").addEventListener("click", () => $("import-dialog").close());
-$("import-json").placeholder = JSON.stringify(
-  {
-    id: "my-skill",
-    name: "My Skill",
-    description: "What this skill does",
-    inputs: ["evidence-brief"],
-    outputs: ["action-plan"],
-    steps: ["Review the brief", "Write an action plan"],
-    constraints: ["Use permitted material"],
-    tags: ["planning"],
-  },
-  null,
-  2,
-);
-$("import-form").addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const button = event.submitter;
-  button.disabled = true;
+$("import-dialog").addEventListener("close", () => {
+  fileRevision++;
+  invalidateImport();
+});
+$("import-json").addEventListener("input", () => {
+  fileRevision++;
+  invalidateImport();
+});
+$("import-format").addEventListener("change", () => {
+  fileRevision++;
+  invalidateImport();
+});
+$("import-confirm").addEventListener("change", updateImportGate);
+$("contract-fields").addEventListener("input", () => {
+  $("import-confirm").checked = false;
+  updateImportGate();
+});
+$("import-file").addEventListener("change", async () => {
+  const file = $("import-file").files[0];
+  const revision = ++fileRevision;
+  invalidateImport();
+  if (!file) return;
   try {
-    await api("import", { json: $("import-json").value });
-    await refresh();
-    $("import-dialog").close();
-    $("import-json").value = "";
-    notify(t("imported"));
+    if (file.size > 64000) throw Error(t("importTooLarge"));
+    const source = await file.text();
+    if (revision !== fileRevision) return;
+    $("import-format").value = /\.json$/i.test(file.name) ? "json" : "markdown";
+    $("import-json").value = source;
+    invalidateImport();
   } catch (error) {
-    $("import-error").textContent = error.message;
+    if (revision === fileRevision)
+      $("import-error").textContent = error.message;
   } finally {
-    button.disabled = false;
+    $("import-file").value = "";
   }
 });
+$("import-preview").addEventListener("click", async () => {
+  invalidateImport();
+  const revision = importRevision,
+    source = $("import-json").value;
+  $("import-preview").disabled = true;
+  try {
+    const data = await api("import-preview", { markdown: source });
+    if (revision !== importRevision) return;
+    reviewedSource = source;
+    showImportPreview(data);
+  } catch (error) {
+    if (revision === importRevision)
+      $("import-error").textContent = error.message;
+  } finally {
+    if (revision === importRevision) $("import-preview").disabled = false;
+  }
+});
+$("import-form").addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if ($("import-controls").disabled) return;
+  let json = $("import-json").value;
+  if ($("import-format").value === "markdown") {
+    if (reviewedSource !== json || !$("import-confirm").checked) {
+      $("import-error").textContent = t("previewRequired");
+      return;
+    }
+    const skill = {};
+    for (const field of ["id", "name", "description"])
+      skill[field] = $("contract-" + field).value;
+    for (const field of arrayFields)
+      skill[field] = [...$("contract-" + field).querySelectorAll("textarea")]
+        .map((input) => input.value)
+        .filter((value) => value.trim());
+    json = JSON.stringify(skill);
+  }
+  const revision = importRevision;
+  $("import-controls").disabled = true;
+  $("import-error").textContent = "";
+  try {
+    await api("import", { json });
+    if (revision === importRevision) {
+      $("import-dialog").close();
+      $("import-json").value = "";
+    }
+    notify(t("imported"));
+    await refresh();
+  } catch (error) {
+    if (revision === importRevision)
+      $("import-error").textContent = error.message;
+    else notify(error.message);
+  } finally {
+    $("import-controls").disabled = false;
+    updateImportGate();
+  }
+});
+
 try {
   await refresh();
   translate();

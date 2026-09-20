@@ -1003,3 +1003,141 @@ dialog textarea {
     scroll-behavior: auto !important;
   }
 }
+/* Reviewed import: independent items preserve multiline instructions. */
+#import-controls {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.import-source-row {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+}
+.import-source-row input,
+.import-source-row select {
+  max-width: 100%;
+  min-width: 0;
+}
+#import-review {
+  border-top: 1px solid #d5dfed;
+  margin-top: 24px;
+  padding-top: 16px;
+}
+#import-review h3 {
+  margin-bottom: 8px;
+}
+#import-warnings {
+  color: #574417;
+  background: #fff8e9;
+  border-radius: 12px;
+  padding: 12px;
+  white-space: pre-wrap;
+  font-size: 13px;
+  line-height: 1.7;
+}
+#import-warnings:empty {
+  display: none;
+}
+#import-unparsed {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: 12px;
+  line-height: 1.7;
+  max-height: 220px;
+  overflow: auto;
+}
+#unmapped-details {
+  margin: 16px 0;
+}
+#contract-fields {
+  display: grid;
+  gap: 16px;
+  margin: 20px 0;
+}
+#contract-fields label {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+#contract-fields fieldset {
+  min-width: 0;
+  border: 1px solid #d5dfed;
+  border-radius: 12px;
+  padding: 12px;
+}
+#contract-fields legend {
+  font-size: 13px;
+  padding: 0 6px;
+}
+#contract-fields textarea {
+  margin-bottom: 8px;
+}
+#contract-fields input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #aab9cc;
+  border-radius: 8px;
+  padding: 10px;
+  font: inherit;
+}
+.review-confirm {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.review-confirm input {
+  margin-top: 4px;
+}
+#import-format {
+  padding: 8px;
+  border: 1px solid #aab9cc;
+  border-radius: 8px;
+}
+#import-dialog {
+  width: min(920px, 94vw);
+  max-height: 92vh;
+  padding: 28px;
+}
+#import-source {
+  margin: 16px 0;
+  padding: 14px 16px;
+  background: #f4f7fb;
+  border-radius: 12px;
+}
+#import-source > summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+#contract-fields {
+  grid-template-columns: 1fr 1fr;
+}
+#contract-fields > label:nth-child(3),
+#contract-fields > fieldset[data-field="steps"],
+#contract-fields > fieldset[data-field="constraints"] {
+  grid-column: 1 / -1;
+}
+#contract-fields textarea {
+  font-family: inherit;
+  padding: 10px;
+  min-height: 64px;
+}
+#import-review {
+  margin-top: 16px;
+}
+@media (max-width: 600px) {
+  #import-dialog {
+    padding: 18px;
+  }
+  #contract-fields {
+    grid-template-columns: 1fr;
+  }
+  #contract-fields > * {
+    grid-column: 1 !important;
+  }
+}

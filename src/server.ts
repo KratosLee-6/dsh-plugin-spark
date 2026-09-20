@@ -13,6 +13,7 @@ import {
   text,
   type Language,
 } from "./core.js";
+import { previewMarkdown } from "./markdown.js";
 import type { SparkStore } from "./store.js";
 
 async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
@@ -124,6 +125,11 @@ export function createStudio(store: SparkStore) {
           text(b.name, "name", 120),
         );
         reply(200, { ...result, markdown: skillMarkdown(result.skill) });
+      } else if (path === "/api/import-preview") {
+        reply(
+          200,
+          previewMarkdown(typeof b.markdown === "string" ? b.markdown : ""),
+        );
       } else if (path === "/api/import")
         reply(200, store.put(parseSkillJSON(text(b.json, "json", 64000))));
       else reply(404, { error: "NOT_FOUND" });

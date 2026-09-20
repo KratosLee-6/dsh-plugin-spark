@@ -1,6 +1,22 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { mkdirSync } from "node:fs";
 import AxeBuilder from "@axe-core/playwright";
+
+// Capture within a document-sized viewport: avoids Edge's beyond-viewport capture failure.
+// Restore the test viewport so evidence generation does not change later interaction assertions.
+async function captureDocument(page: Page, path: string) {
+  const viewport = page.viewportSize()!;
+  const height = await page.evaluate(() =>
+    Math.max(document.documentElement.scrollHeight, document.body.scrollHeight),
+  );
+  try {
+    await page.setViewportSize({ width: viewport.width, height });
+    await page.screenshot({ path, animations: "disabled" });
+  } finally {
+    await page.setViewportSize(viewport);
+  }
+}
+
 test("desktop bilingual collision, save, grow and export; local resources only", async ({
   page,
 }) => {
@@ -17,11 +33,7 @@ test("desktop bilingual collision, save, grow and export; local resources only",
   await page.goto("/");
   await expect(page.locator(".skill-card").first()).toBeVisible();
   mkdirSync("docs/screenshots", { recursive: true });
-  await page.screenshot({
-    path: "docs/screenshots/studio-en.png",
-    fullPage: true,
-    animations: "disabled",
-  });
+  await captureDocument(page, "docs/screenshots/studio-en.png");
   await page.getByRole("button", { name: "Create a spark" }).click();
   await expect(page.locator("#stage")).toHaveClass(/running/);
   await expect(page.locator("#result")).toBeVisible();
@@ -38,11 +50,7 @@ test("desktop bilingual collision, save, grow and export; local resources only",
   await page.locator("#language").click();
   await page.locator("#collide").click();
   await expect(page.locator("#result")).toContainText("确定性规则草案");
-  await page.screenshot({
-    path: "docs/screenshots/collision-zh.png",
-    fullPage: true,
-    animations: "disabled",
-  });
+  await captureDocument(page, "docs/screenshots/collision-zh.png");
   expect(external).toEqual([]);
   expect(failures).toEqual([]);
 });
@@ -74,11 +82,7 @@ test("mobile layout, gap disclosure and escaped imported content", async ({
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
-  await page.screenshot({
-    path: "docs/screenshots/mobile-en.png",
-    fullPage: true,
-    animations: "disabled",
-  });
+  await captureDocument(page, "docs/screenshots/mobile-en.png");
   await page.locator("#import-open").click();
   await page.locator("#import-json").fill(
     JSON.stringify({
@@ -146,4 +150,145 @@ test("WCAG A/AA automated checks on the workspace, result and import dialog", as
       state,
     ).toEqual([]);
   }
+});
+test("Markdown file preview, reviewed contracts, duplicate safety and bilingual screenshot", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#language").click();
+  await page.locator("#import-open").click();
+  await page
+    .locator("#import-file")
+    .setInputFiles("examples/reviewable-skill.md");
+  await expect(page.locator("#import-format")).toHaveValue("markdown");
+  await expect(page.locator("#import-save")).toBeDisabled();
+  await page.locator("#import-preview").click();
+  await expect(page.locator("#import-review")).toBeVisible();
+  await expect(page.locator("#import-warnings")).toContainText("不会保存");
+  await page.locator("#unmapped-details summary").click();
+  await expect(page.locator("#import-unparsed")).toContainText("allowed-tools");
+  await page.locator("#contract-inputs textarea").fill("evidence-brief");
+  await page.locator("#contract-outputs textarea").fill("action-plan");
+  await page.locator("#import-confirm").check();
+  await page.locator("#contract-name").fill("证据审阅");
+  await expect(page.locator("#import-confirm")).not.toBeChecked();
+  await expect(page.locator("#import-save")).toBeDisabled();
+  await page.locator("#import-confirm").check();
+  await page.locator("#import-dialog").evaluate((el) => (el.scrollTop = 0));
+  await expect(page.locator("#import-title")).toBeInViewport();
+  await page
+    .locator("#import-dialog")
+    .screenshot({ path: "docs/screenshots/import-review-zh.png" });
+  const audit = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+    .analyze();
+  expect(audit.violations).toEqual([]);
+  await page.locator("#import-save").click();
+  await expect(page.locator("#import-dialog")).toBeHidden();
+  await page.reload();
+  await page.locator("#search").fill("证据审阅");
+  await expect(page.locator(".skill-card")).toHaveCount(1);
+  await page.locator("#second").selectOption("evidence-review");
+  await page.locator("#collide").click();
+  await expect(page.locator("#result")).toContainText("evidence-brief");
+});
+
+test("mobile Markdown preview stays inert and source edits invalidate review", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.locator("#import-open").click();
+  await page.locator("#import-format").selectOption("markdown");
+  const source =
+    "---\nname: ui-markdown\ndescription: Read only\n---\n# <img src=x onerror=alert(1)>\n## Inputs\n- brief\n## Outputs\n- plan\n## Steps\n- Read\n## Unknown\n<script>alert(1)</script>";
+  await page.locator("#import-json").fill(source);
+  await page.locator("#import-preview").click();
+  await expect(page.locator("#import-review")).toBeVisible();
+  await expect(page.locator("#contract-name")).toHaveValue(
+    "<img src=x onerror=alert(1)>",
+  );
+  await expect(
+    page.locator("#import-review img, #import-review script"),
+  ).toHaveCount(0);
+  await page.locator("#import-confirm").check();
+  await page.locator("#import-source summary").click();
+  await page.locator("#import-json").fill(source + "\nChanged");
+  await expect(page.locator("#import-review")).toBeHidden();
+  await expect(page.locator("#import-save")).toBeDisabled();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.route("**/api/import-preview", async (route) => {
+    await page.locator("#import-json").fill("# A newer source");
+    await route.fulfill({
+      status: 400,
+      contentType: "application/json",
+      body: JSON.stringify({ message: "stale failure" }),
+    });
+  });
+  await page.locator("#import-preview").click();
+  await expect(page.locator("#import-error")).toBeEmpty();
+  await expect(page.locator("#import-save")).toBeDisabled();
+});
+test("Markdown save errors preserve review, and switching format removes obsolete validation", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#import-open").click();
+  await page.locator("#import-file").setInputFiles({
+    name: "oversized.md",
+    mimeType: "text/markdown",
+    buffer: Buffer.alloc(64001, 65),
+  });
+  await expect(page.locator("#import-error")).toContainText("64 KB");
+  await page.locator("#import-format").selectOption("markdown");
+  await page
+    .locator("#import-json")
+    .fill(
+      "---\nname: evidence-planner\ndescription: Turn a brief into an evidence-led action plan.\n---\n# Evidence Planner\n## Inputs\n- brief\n## Outputs\n- plan\n## Steps\n- Review evidence",
+    );
+  await page.locator("#import-preview").click();
+  await expect(page.locator("#import-review")).toBeVisible();
+  await page.locator("#import-dialog").evaluate((el) => (el.scrollTop = 0));
+  await page
+    .locator("#import-dialog")
+    .screenshot({ path: "docs/screenshots/import-review-en.png" });
+  await page.locator("#import-confirm").check();
+  await page.route("**/api/import", (route) =>
+    route.fulfill({
+      status: 500,
+      contentType: "application/json",
+      body: JSON.stringify({ message: "Synthetic save failure" }),
+    }),
+  );
+  await page.locator("#import-save").click();
+  await expect(page.locator("#import-error")).toContainText(
+    "Synthetic save failure",
+  );
+  await expect(page.locator("#contract-id")).toHaveValue("evidence-planner");
+  await expect(page.locator("#import-save")).toBeEnabled();
+  await page.unroute("**/api/import");
+  await page.locator("#import-source summary").click();
+  await page.locator("#import-json").fill("# No metadata");
+  await page.locator("#import-preview").click();
+  await expect(page.locator("#contract-id")).toHaveValue("");
+  await page.locator("#import-source summary").click();
+  await page.locator("#import-format").selectOption("json");
+  await page.locator("#import-json").fill(
+    JSON.stringify({
+      id: "after-review",
+      name: "JSON after review",
+      description: "A synthetic example",
+      inputs: ["brief"],
+      outputs: ["plan"],
+      steps: ["Review"],
+      constraints: [],
+      tags: [],
+    }),
+  );
+  await page.locator("#import-save").click();
+  await expect(page.locator("#import-dialog")).toBeHidden();
 });

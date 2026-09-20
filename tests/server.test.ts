@@ -147,3 +147,42 @@ it("bounds input and reports actionable failures without raw database errors", a
   expect(response.status).toBe(500);
   expect(await response.text()).not.toContain("private path");
 });
+it("previews Markdown without writes, then validates explicit reviewed JSON", async () => {
+  const { store, post } = await studio();
+  const count = store.skills().length;
+  const source =
+    "---\nname: reviewed\ndescription: Review only\n---\n## Steps\n- Examine\n## Extra\n<img src=x onerror=alert(1)>\n";
+  const response = await post("/api/import-preview", { markdown: source });
+  expect(response.status).toBe(200);
+  const preview = await response.json();
+  expect(preview.valid).toBe(false);
+  expect(preview.unparsed).toContainEqual({
+    line: 8,
+    text: "<img src=x onerror=alert(1)>",
+  });
+  expect(store.skills()).toHaveLength(count);
+  expect(
+    (await post("/api/import", { json: JSON.stringify(preview.draft) })).status,
+  ).toBe(400);
+  const reviewed = { ...preview.draft, inputs: ["brief"], outputs: ["plan"] };
+  expect(
+    (
+      await (
+        await post("/api/import", { json: JSON.stringify(reviewed) })
+      ).json()
+    ).created,
+  ).toBe(true);
+  expect(
+    (
+      await (
+        await post("/api/import", { json: JSON.stringify(reviewed) })
+      ).json()
+    ).created,
+  ).toBe(false);
+  expect((await post("/api/import-preview", { markdown: null })).status).toBe(
+    400,
+  );
+  expect(
+    (await post("/api/import-preview", { markdown: "---\nname: a" })).status,
+  ).toBe(400);
+});

@@ -4,7 +4,7 @@ Spark has one composition engine and two entry points. / 一个组合核心，�
 
 ```mermaid
 flowchart LR
-  D[DSH agent / Agent] --> T[Six native tools / 六个原生工具]
+  D[DSH agent / Agent] --> T[Seven native tools / 七个原生工具]
   U[Companion Studio / 独立工作室] --> H[Loopback HTTP / 本机服务]
   T --> S[Application + SQLite / 用例与存储]
   H --> S
@@ -48,3 +48,13 @@ Studio 管理有限的 820ms 动画，在输入/语言变化或页面隐藏时�
 The shipped adapter is a native DSH tool plugin, not an MCP server. A local patch loads the built `dist/index.js`. Studio is a separate loopback interface; it is not a registered DSH client-side panel. Adding an MCP adapter or host-native renderer later should reuse the same core rather than fork business logic.
 
 交付适配器是 DSH 原生工具插件，不是 MCP 服务。通过本地 patch 加载 `dist/index.js`。Studio 是独立的本机界面，未注册为 DSH 客户端面板。未来如加入 MCP 或宿主原生渲染，应复用核心，避免复制业务逻辑。
+
+## Reviewed Markdown import / Markdown 审阅导入
+
+`src/markdown.ts` is a bounded reader, not a general YAML parser. Preview returns a draft, validation error, exact-source SHA-256 fingerprint and line-numbered unmapped text. No database or external service is involved. The HTTP preview and DSH preview tool reuse this function. Saving still uses the existing validated JSON import boundary.
+
+预览是有限语法读取，不是通用 YAML 解析；返回草案、校验错误、原文 SHA-256 指纹及带行号的未映射内容，不写数据库、不调用外部服务。HTTP 和 DSH 复用同一函数，保存仍走已有 JSON 校验边界。
+
+Studio invalidates review on source changes and ignores stale preview responses. Editing any contract field clears confirmation. Source text, the preview fingerprint and unmapped content are not archived in SQLite; only reviewed Skill fields are persisted. Retain the original file if you need an import audit record. DSH confirmation is a host/user workflow, not an authorization token enforced by the parser.
+
+原文变化会使审阅失效，过期响应被忽略；编辑契约字段会撤销勾选。SQLite 只保存确认后的 Skill 字段，不归档原文、预览指纹或未映射内容；需要导入审计记录时请保留原文件。DSH 的用户确认依靠宿主流程，解析器不将其实现为授权令牌。
