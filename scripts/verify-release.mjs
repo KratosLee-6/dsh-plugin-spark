@@ -13,7 +13,7 @@ const output = execFileSync(
 );
 const [pack] = JSON.parse(output);
 const allowed =
-  /^(dist\/|studio\/|examples\/|README(?:\.zh-CN)?\.md$|LICENSE$|THIRD_PARTY_NOTICES\.md$|package\.json$)/;
+  /^(dist\/|studio\/|examples\/|README(?:\.zh-CN)?\.md$|LICENSE$|REPOSITORY-SCOPE\.md$|THIRD_PARTY_NOTICES\.md$|package\.json$)/;
 for (const file of pack.files) {
   assert(allowed.test(file.path), `Unexpected package file: ${file.path}`);
   assert(
@@ -28,6 +28,7 @@ for (const required of [
   "studio/index.html",
   "examples/skill.json",
   "README.zh-CN.md",
+  "REPOSITORY-SCOPE.md",
   "LICENSE",
   "THIRD_PARTY_NOTICES.md",
 ])
@@ -42,6 +43,7 @@ const scan = (dir) =>
 const docs = [
   "README.md",
   "README.zh-CN.md",
+  "REPOSITORY-SCOPE.md",
   ...scan("docs").filter((p) => p.endsWith(".md")),
 ];
 for (const file of docs) {

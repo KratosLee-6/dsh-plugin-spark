@@ -3,6 +3,8 @@
 <p align="center">A local-first skill composition plugin for DeepSeek Harness.<br>Bring two skills together. Keep the evidence. Grow a new starting point.</p>
 <p align="center"><a href="README.zh-CN.md">简体中文</a> · <a href="#quick-start">Quick start</a> · <a href="docs/TESTING.md">Test evidence</a> · <a href="docs/ARCHITECTURE.md">Architecture</a></p>
 
+> **Repository scope:** this repository contains the Spark DSH plugin and its companion Studio. Full-product research, UI/VI planning, standalone application development and Windows/Android/iOS delivery belong to [AI--boom](https://github.com/KratosLee-6/AI--boom) (access may require permission). See [repository ownership](REPOSITORY-SCOPE.md). Plugin releases and test results cover the plugin only.
+
 ![Spark Studio — real application screenshot with original synthetic examples](docs/screenshots/studio-en.png)
 
 **Two skills are more useful when their connection is explicit.** Spark finds declared handoffs, shows what is missing, keeps both sets of constraints, and turns a saved composition into a new Skill draft that can participate in the next collision.

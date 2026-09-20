@@ -45,7 +45,8 @@
     "README.md",
     "README.zh-CN.md",
     "LICENSE",
-    "THIRD_PARTY_NOTICES.md"
+    "THIRD_PARTY_NOTICES.md",
+    "REPOSITORY-SCOPE.md"
   ],
   "scripts": {
     "build": "tsc",

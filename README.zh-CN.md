@@ -78,6 +78,8 @@ npx --no-install dsh web --patch spark.patch.yml
 
 ## 看见连接
 
+> **仓库归属：** 本仓库仅维护 Spark DSH 插件及配套 Studio。完整产品内容、调研、UI/VI 规划、独立 App 与 Windows/Android/iOS 建设归 [AI--boom](https://github.com/KratosLee-6/AI--boom)（可能需要访问权限）。详见[仓库边界](REPOSITORY-SCOPE.md)。插件版本与测试仅代表插件交付。
+
 ![Spark Studio 英文工作台，来自实际运行截图](docs/screenshots/studio-en.png)
 
 <details><summary>查看手机宽度的工作台</summary>
