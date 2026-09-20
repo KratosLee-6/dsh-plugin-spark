@@ -9,6 +9,8 @@ const escape = (value) =>
   );
 const copy = {
   en: {
+    refreshFailed:
+      "Saved data is safe, but the view could not refresh. Reload to see the latest library.",
     sourceDocument: "Source document · stays on this device",
     contractConstraints: "Constraints",
     importFormat: "Source format",
@@ -90,6 +92,7 @@ const copy = {
     draft: "Unverified draft",
   },
   zh: {
+    refreshFailed: "数据已保存，但界面刷新失败；请刷新页面查看最新资料库。",
     sourceDocument: "资料原文 · 留在这台设备上",
     contractConstraints: "约束",
     importFormat: "资料格式",
@@ -275,7 +278,7 @@ function renderResult() {
   $("empty-result").hidden = true;
   $("result").hidden = false;
   $("result").innerHTML =
-    `<div class="result-header"><h3 id="result-title">${escape(result.title)}</h3><span class="match ${result.gaps.length ? "gap" : ""}">${t(result.gaps.length ? "gap" : "ready")}</span></div><p class="disclaimer">${escape(result.disclaimer)}</p><div class="handoff"><strong>${t("handoff")}</strong> · ${escape(result.handoffs.join(" → ") || t("none"))}${result.gaps.length ? `<br><strong>${t("missing")}</strong> · ${escape(result.gaps.join(" · "))}` : ""}</div><ol class="plan">${result.plan.map((p) => `<li>${escape(p)}</li>`).join("")}</ol><details><summary>${t("constraints")}</summary><ul>${result.constraints.map((c) => `<li><strong>${escape(c.skillId)}</strong> · ${escape(c.text)}</li>`).join("")}${result.checks.map((c) => `<li>${escape(c)}</li>`).join("")}</ul></details><div class="result-buttons"><button id="save" class="primary" ${saved ? "disabled" : ""}>${t(saved ? "saved" : "save")}</button><button id="grow" class="quiet" ${!saved || grown ? "disabled" : ""}>${t("grow")} ↗</button>${grown ? `<button id="download" class="quiet">${t("download")} ↓</button>` : ""}</div>`;
+    `<div class="result-header"><h3 id="result-title">${escape(result.title)}</h3><span class="match ${result.gaps.length ? "gap" : ""}">${t(result.gaps.length ? "gap" : "ready")}</span></div><p class="disclaimer">${escape(result.disclaimer)}</p><div class="handoff"><strong>${t("handoff")}</strong> · ${escape(result.handoffs.join(" → ") || t("none"))}${result.gaps.length ? `<br><strong>${t("missing")}</strong> · ${escape(result.gaps.join(" · "))}` : ""}</div><ol class="plan">${result.plan.map((p) => `<li>${escape(p)}</li>`).join("")}</ol><details><summary>${t("constraints")}</summary><ul>${result.constraints.map((c) => `<li><strong>${escape(c.skillId)}</strong> · ${escape(c.text)}</li>`).join("")}${result.checks.map((c) => `<li>${escape(c)}</li>`).join("")}</ul></details>${result.growth?.allowed === false ? `<p class="growth-limit" role="status">${escape(result.growth.reason)}</p>` : ""}<div class="result-buttons"><button id="save" class="primary" ${saved ? "disabled" : ""}>${t(saved ? "saved" : "save")}</button><button id="grow" class="quiet" ${!saved || grown || result.growth?.allowed === false ? "disabled" : ""}>${t("grow")} ↗</button>${grown ? `<button id="download" class="quiet">${t("download")} ↓</button>` : ""}</div>`;
 }
 function busy(value) {
   $("first").disabled = value;
@@ -308,6 +311,14 @@ async function refresh() {
   options();
   renderLibrary();
   renderHistory();
+}
+async function refreshAfterWrite(successKey) {
+  notify(t(successKey));
+  try {
+    await refresh();
+  } catch {
+    notify(`${t(successKey)} ${t("refreshFailed")}`);
+  }
 }
 async function run() {
   if (controller) return;
@@ -410,14 +421,18 @@ document.addEventListener("click", async (event) => {
         saved = true;
         renderResult();
       }
-      await refresh();
-      notify(t("saved"));
+      await refreshAfterWrite("saved");
     } catch (error) {
       notify(error.message);
       if (result === snapshot) button.disabled = false;
     }
   }
-  if (button.id === "grow" && result && saved) {
+  if (
+    button.id === "grow" &&
+    result &&
+    saved &&
+    result.growth?.allowed !== false
+  ) {
     button.disabled = true;
     const snapshot = result;
     try {
@@ -431,8 +446,7 @@ document.addEventListener("click", async (event) => {
         grown = data;
         renderResult();
       }
-      await refresh();
-      notify(t("grown"));
+      await refreshAfterWrite("grown");
     } catch (error) {
       notify(error.message);
       if (result === snapshot) button.disabled = false;
@@ -513,9 +527,7 @@ function showImportPreview(data) {
   for (const field of ["id", "name", "description"]) {
     const label = document.createElement("label");
     label.textContent = t(field);
-    const input = document.createElement(
-      field === "description" ? "textarea" : "input",
-    );
+    const input = document.createElement(field === "id" ? "input" : "textarea");
     input.id = "contract-" + field;
     input.value = data.draft[field];
     input.required = true;
@@ -639,8 +651,7 @@ $("import-form").addEventListener("submit", async (event) => {
       $("import-dialog").close();
       $("import-json").value = "";
     }
-    notify(t("imported"));
-    await refresh();
+    await refreshAfterWrite("imported");
   } catch (error) {
     if (revision === importRevision)
       $("import-error").textContent = error.message;

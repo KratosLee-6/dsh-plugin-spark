@@ -12,7 +12,12 @@ export interface Skill {
   tags: string[];
   parents: string[];
 }
+export interface GrowthAssessment {
+  allowed: boolean;
+  reason: string | null;
+}
 export interface Collision {
+  growth?: GrowthAssessment;
   id: string;
   engine: "spark-rules/1";
   language: Language;
@@ -131,7 +136,8 @@ export function collide(
   const fingerprint = digest({ engine: "spark-rules/1", a, b, goal, language });
   const connected = gaps.length === 0;
   const zh = language === "zh";
-  return {
+  const collision: Collision = {
+    growth: { allowed: true, reason: null },
     id: `spark-${fingerprint.slice(0, 24)}`,
     engine: "spark-rules/1",
     language,
@@ -177,34 +183,54 @@ export function collide(
       ? "确定性规则草案：按声明的输入/输出名称匹配，未执行技能、未验证语义或效果。"
       : "Deterministic rule draft: matches declared input/output names. Skills were not executed; semantics and effectiveness are unverified.",
   };
+  collision.growth = assessGrowth(collision);
+  return collision;
 }
 
 export function grow(collision: Collision, rawName: string): Skill {
   const name = text(rawName, "name", 120);
   const [a, b] = collision.parents;
   const id = `grown-${digest({ collision: collision.fingerprint, name }).slice(0, 20)}`;
-  return validateSkill({
-    id,
-    name,
-    description: collision.goal,
-    inputs: [...new Set([...a.inputs, ...collision.gaps])],
-    outputs: b.outputs,
-    steps: [
-      ...a.steps.map((step) => `[A] ${step}`),
-      collision.gaps.length
-        ? `Bridge / 补充交接: ${collision.gaps.join(", ")}`
-        : `Review handoff / 检查交接: ${collision.handoffs.join(", ")}`,
-      ...b.steps.map((step) => `[B] ${step}`),
-    ],
-    constraints: [...new Set(collision.constraints.map((c) => c.text))],
-    tags: ["spark-grown", "unverified-draft"],
-    parents: [a.id, b.id],
-  });
+  try {
+    return validateSkill({
+      id,
+      name,
+      description: collision.goal,
+      inputs: [...new Set([...a.inputs, ...collision.gaps])],
+      outputs: b.outputs,
+      steps: [
+        ...a.steps.map((step) => `[A] ${step}`),
+        collision.gaps.length
+          ? `Bridge / 补充交接: ${collision.gaps.join(", ")}`
+          : `Review handoff / 检查交接: ${collision.handoffs.join(", ")}`,
+        ...b.steps.map((step) => `[B] ${step}`),
+      ],
+      constraints: [...new Set(collision.constraints.map((c) => c.text))],
+      tags: ["spark-grown", "unverified-draft"],
+      parents: [a.id, b.id],
+    });
+  } catch (error) {
+    if (!(error instanceof SparkError)) throw error;
+    throw new SparkError(
+      "GROWTH_LIMIT",
+      `GROWTH_LIMIT: Combined contract exceeds Skill limits. Split or shorten the parent Skills, then collide again. Nothing was truncated. / 组合超出技能容量，请拆分或缩短父级后重新碰撞，内容未截断。 (${error.message})`,
+    );
+  }
+}
+export function assessGrowth(collision: Collision): GrowthAssessment {
+  try {
+    grow(collision, "Capacity check");
+    return { allowed: true, reason: null };
+  } catch (error) {
+    if (!(error instanceof SparkError) || error.code !== "GROWTH_LIMIT")
+      throw error;
+    return { allowed: false, reason: error.message };
+  }
 }
 
 export function skillMarkdown(skill: Skill): string {
   const s = validateSkill(skill);
   const bullets = (items: string[]) =>
     items.map((v) => `- ${v.replaceAll("\n", "\n  ")}`).join("\n");
-  return `---\nname: ${JSON.stringify(s.id)}\ndescription: ${JSON.stringify(s.description)}\n---\n\n# ${s.name}\n\n> Unverified composition draft / 未验证的组合草案\n\n## Inputs / 输入\n${bullets(s.inputs)}\n\n## Outputs / 输出\n${bullets(s.outputs)}\n\n## Steps / 步骤\n${bullets(s.steps)}\n\n## Constraints / 约束\n${bullets(s.constraints)}\n\n## Tags / 标签\n${bullets(s.tags)}\n\n## Parents / 来源\n${bullets(s.parents)}\n`;
+  return `---\nname: ${JSON.stringify(s.id)}\ndescription: ${JSON.stringify(s.description)}\ndisplay-name: ${JSON.stringify(s.name)}\n---\n\n# ${s.name.replace(/\r\n?|\n/g, " ")}\n\n> Unverified composition draft / 未验证的组合草案\n\n## Inputs / 输入\n${bullets(s.inputs)}\n\n## Outputs / 输出\n${bullets(s.outputs)}\n\n## Steps / 步骤\n${bullets(s.steps)}\n\n## Constraints / 约束\n${bullets(s.constraints)}\n\n## Tags / 标签\n${bullets(s.tags)}\n\n## Parents / 来源\n${bullets(s.parents)}\n`;
 }

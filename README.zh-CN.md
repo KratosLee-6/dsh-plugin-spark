@@ -7,7 +7,7 @@
 
 **两个 Skill 放在一起，价值不只在于多一个工具，而在于说清楚它们如何连接。** Spark 找出声明的交接点，列出尚缺的输入，保留双方约束，再将保存的组合生长为新 Skill 草案，参与下一次碰撞。
 
-> v0.2.0 是**确定性的技能组合工作台**，不会自动执行技能，也不宣称已经验证了 AI 创新效果。名称匹配只是值得验证的线索，不是兼容性证明。截图来自独立的配套 Studio，与 DSH 工具共用核心，并非嵌入 DSH 的原生面板。
+> v0.2.1 是**确定性的技能组合工作台**，不会自动执行技能，也不宣称已经验证了 AI 创新效果。名称匹配只是值得验证的线索，不是兼容性证明。截图来自独立的配套 Studio，与 DSH 工具共用核心，并非嵌入 DSH 的原生面板。
 
 ## 闪光点在哪里？
 
@@ -124,3 +124,9 @@ npm run test:ui
 [交付路线与验收节点](docs/ROADMAP.md)。
 
 MIT 许可证。Spark 原创代码与图形 © 2026 KratosLee-6；第三方依赖保留各自许可证，见[第三方声明](THIRD_PARTY_NOTICES.md)。
+
+## Audit hardening / 审计整改
+
+Version 0.2.1 fixes Markdown contract round-tripping, discloses growth capacity before saving, handles escaped transport sizes, and distinguishes committed writes from refresh failures. Oversized compositions stay visible but cannot grow until their parent contracts are split or shortened; content is never silently truncated. See the [bilingual audit and regression evidence](docs/AUDIT-2026-09-20.md).
+
+0.2.1 修复 Markdown 契约往返、提前披露生长容量、转义后的请求体限制及保存成功后的刷新提示。超限组合仍可查看，但需拆分或缩短父级才能生长，不会静默截断内容。审计依据、整改与回归证据见上述双语报告。

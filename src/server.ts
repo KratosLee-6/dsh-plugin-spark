@@ -22,8 +22,12 @@ async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
   for await (const part of req) {
     const buffer = Buffer.from(part);
     size += buffer.length;
-    if (size > 70000)
-      throw new SparkError("INPUT_TOO_LARGE", "Request exceeds 70 KB");
+    // JSON may encode a single source byte as six ASCII characters (e.g. \u0001).
+    if (size > 6 * 64000 + 4096)
+      throw new SparkError(
+        "INPUT_TOO_LARGE",
+        "Encoded request too large / 编码后请求过大",
+      );
     parts.push(buffer);
   }
   try {

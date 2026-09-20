@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import {
   collide,
+  assessGrowth,
   grow,
   validateSkill,
   SparkError,
@@ -72,17 +73,20 @@ export class SparkStore {
   }
   put(value: unknown): { skill: Skill; created: boolean } {
     const skill = validateSkill(value);
-    const row = this.db
-      .prepare("SELECT value FROM skills WHERE id=?")
-      .get(skill.id) as { value: string } | undefined;
-    if (row && row.value !== JSON.stringify(skill))
-      throw new SparkError(
-        "ID_CONFLICT",
-        "This ID already belongs to different content; use a new ID / 编号冲突，请使用新编号",
-      );
+    const encoded = JSON.stringify(skill);
     const result = this.db
       .prepare("INSERT OR IGNORE INTO skills VALUES (?, ?)")
-      .run(skill.id, JSON.stringify(skill));
+      .run(skill.id, encoded);
+    // Check the row that actually won the unique-key race, after the atomic insert.
+    if (result.changes === 0) {
+      const stored = this.skill(skill.id);
+      if (JSON.stringify(stored) !== encoded)
+        throw new SparkError(
+          "ID_CONFLICT",
+          "This ID already belongs to different content; use a new ID / 编号冲突，请使用新编号",
+        );
+      return { skill: stored, created: false };
+    }
     return { skill, created: result.changes === 1 };
   }
   preview(a: string, b: string, goal: string, language: Language): Collision {
@@ -109,14 +113,18 @@ export class SparkStore {
         "NOT_FOUND",
         "Save a collision before growing it / 请先保存碰撞",
       );
-    return JSON.parse(row.value) as Collision;
+    const collision = JSON.parse(row.value) as Collision;
+    return { ...collision, growth: assessGrowth(collision) };
   }
   history(): Collision[] {
     return (
       this.db
         .prepare("SELECT value FROM collisions ORDER BY rowid DESC LIMIT 100")
         .all() as { value: string }[]
-    ).map((row) => JSON.parse(row.value) as Collision);
+    ).map((row) => {
+      const collision = JSON.parse(row.value) as Collision;
+      return { ...collision, growth: assessGrowth(collision) };
+    });
   }
   grow(id: string, name: string): { skill: Skill; created: boolean } {
     return this.put(grow(this.collision(id), name));

@@ -113,3 +113,24 @@ describe("input boundaries", () => {
     expect(() => text(4, "goal")).toThrow();
   });
 });
+it("discloses growth capacity before offering a draft and never truncates parent content", () => {
+  const a = {
+    ...examples[0]!,
+    steps: Array.from({ length: 16 }, (_, i) => `A ${i}`),
+  };
+  const b = {
+    ...examples[1]!,
+    steps: Array.from({ length: 16 }, (_, i) => `B ${i}`),
+  };
+  const collision = collide(a, b, "Keep every step");
+  expect(collision.growth.allowed).toBe(false);
+  expect(collision.growth.reason).toContain("GROWTH_LIMIT");
+  expect(() => grow(collision, "Too large")).toThrow("Split or shorten");
+  expect(collision.parents[0].steps).toHaveLength(16);
+  const long = collide(
+    { ...examples[0]!, steps: ["x".repeat(500)] },
+    examples[1]!,
+    "Keep text",
+  );
+  expect(long.growth.allowed).toBe(false);
+});

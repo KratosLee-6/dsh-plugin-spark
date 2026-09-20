@@ -186,3 +186,13 @@ it("previews Markdown without writes, then validates explicit reviewed JSON", as
     (await post("/api/import-preview", { markdown: "---\nname: a" })).status,
   ).toBe(400);
 });
+it("accepts in-budget decoded Markdown despite JSON escaping overhead", async () => {
+  const { post } = await studio();
+  const markdown = '"'.repeat(64000);
+  const response = await post("/api/import-preview", { markdown });
+  expect(response.status).toBe(200);
+  expect((await response.json()).unparsed[0].text).toBe(markdown);
+  expect(
+    (await post("/api/import-preview", { markdown: markdown + '"' })).status,
+  ).toBe(400);
+});

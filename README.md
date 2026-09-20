@@ -7,7 +7,7 @@
 
 **Two skills are more useful when their connection is explicit.** Spark finds declared handoffs, shows what is missing, keeps both sets of constraints, and turns a saved composition into a new Skill draft that can participate in the next collision.
 
-> v0.2.0 is a **deterministic composition workbench**, not an autonomous skill executor or an AI discovery benchmark. A matching label is a lead to investigate, not proof of compatibility. Studio is a standalone companion UI using the same engine as the DSH tools; the screenshot is not an embedded DSH panel.
+> v0.2.1 is a **deterministic composition workbench**, not an autonomous skill executor or an AI discovery benchmark. A matching label is a lead to investigate, not proof of compatibility. Studio is a standalone companion UI using the same engine as the DSH tools; the screenshot is not an embedded DSH panel.
 
 ## What makes a spark?
 
@@ -124,3 +124,9 @@ Next candidates: explicit typed contract adapters, portable workspace backup/res
 [Delivery roadmap and acceptance gates](docs/ROADMAP.md).
 
 MIT licensed. Original Spark code and artwork © 2026 KratosLee-6. Runtime peer packages retain their own licenses. [Third-party notices](THIRD_PARTY_NOTICES.md).
+
+## Audit hardening / 审计整改
+
+Version 0.2.1 fixes Markdown contract round-tripping, discloses growth capacity before saving, handles escaped transport sizes, and distinguishes committed writes from refresh failures. Oversized compositions stay visible but cannot grow until their parent contracts are split or shortened; content is never silently truncated. See the [bilingual audit and regression evidence](docs/AUDIT-2026-09-20.md).
+
+0.2.1 修复 Markdown 契约往返、提前披露生长容量、转义后的请求体限制及保存成功后的刷新提示。超限组合仍可查看，但需拆分或缩短父级才能生长，不会静默截断内容。审计依据、整改与回归证据见上述双语报告。

@@ -115,3 +115,73 @@ it.each(["constructor", "__proto__", "toString"])(
     expect(result.unparsed).toHaveLength(2);
   },
 );
+it("preserves multiline display names without turning them into contract headings", () => {
+  const skill = { ...examples[0]!, name: "Original\n## Inputs\n- unexpected" };
+  const result = previewMarkdown(skillMarkdown(skill));
+  expect(result.draft).toEqual(skill);
+  expect(result.unparsed).toEqual([]);
+});
+it("preserves fenced code inside exported list continuations as inert text", () => {
+  const skill = {
+    ...examples[0]!,
+    steps: ["Review sample\n```json\n{}\n```\nContinue"],
+  };
+  const result = previewMarkdown(skillMarkdown(skill));
+  expect(result.draft).toEqual(skill);
+  expect(result.unparsed).toEqual([]);
+});
+it("keeps unindented fake headings inside a list-owned fence inert", () => {
+  const result = previewMarkdown(
+    "---\nname: fence-owner\ndescription: Keep code inert\n---\n## Steps\n- review\n  ```md\n## Inputs\n- fake\n  ```\n## Outputs\n- real",
+  );
+  expect(result.draft.inputs).toEqual([]);
+  expect(result.draft.outputs).toEqual(["real"]);
+  expect(result.draft.steps).toEqual(["review\n```md\n## Inputs\n- fake\n```"]);
+});
+it("reports an unclosed list-owned fence without parsing contracts inside it", () => {
+  const result = previewMarkdown(
+    "## Steps\n- review\n  ```\n## Inputs\n- fake",
+  );
+  expect(result.draft.inputs).toEqual([]);
+  expect(result.warnings).toContain("Unclosed code fence / 代码围栏未闭合");
+});
+
+it.each(["```", "~~~"])(
+  "round-trips a list item starting with %s and the following contracts",
+  (marker) => {
+    const skill = {
+      ...examples[0]!,
+      steps: [`${marker}json\n{}\n${marker}`],
+      constraints: ["local"],
+      tags: ["test"],
+      parents: ["parent"],
+    };
+    const result = previewMarkdown(skillMarkdown(skill));
+    expect(result.draft).toEqual(skill);
+    expect(result.warnings).toEqual([]);
+  },
+);
+
+it.each(["```echo hello```", "Review\n```echo hello```"])(
+  "keeps inline backtick spans literal: %s",
+  (step) => {
+    const skill = {
+      ...examples[0]!,
+      steps: [step],
+      constraints: ["local"],
+      tags: ["test"],
+      parents: ["parent"],
+    };
+    const result = previewMarkdown(skillMarkdown(skill));
+    expect(result.draft).toEqual(skill);
+    expect(result.warnings).toEqual([]);
+  },
+);
+it("does not start a standalone fence for an inline backtick span", () => {
+  const result = previewMarkdown("```echo hello```\n## Inputs\n- actual");
+  expect(result.draft.inputs).toEqual(["actual"]);
+  expect(result.unparsed.map((item) => item.text)).toEqual([
+    "```echo hello```",
+  ]);
+  expect(result.warnings).not.toContain("Unclosed code fence / 代码围栏未闭合");
+});

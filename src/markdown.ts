@@ -30,6 +30,13 @@ const sections: Record<
 };
 
 /** Restricted Markdown reader. No YAML evaluation, HTML rendering, file access or execution. */
+function fenceOpening(line: string): string | undefined {
+  const match = /^\s*(`{3,}|~{3,})(.*)$/.exec(line);
+  if (!match || (match[1]![0] === "`" && match[2]!.includes("`")))
+    return undefined;
+  return match[1];
+}
+
 export function previewMarkdown(source: string): ImportPreview {
   if (typeof source !== "string" || Buffer.byteLength(source, "utf8") > 64000)
     throw new SparkError(
@@ -62,6 +69,7 @@ export function previewMarkdown(source: string): ImportPreview {
     if (lines[i]?.trim()) unparsed.push({ line: i + 1, text: lines[i]! });
   };
   let start = 0;
+  let explicitDisplayName = false;
   if (lines[0] === "---") {
     const end = lines.indexOf("---", 1);
     if (end < 0)
@@ -71,7 +79,7 @@ export function previewMarkdown(source: string): ImportPreview {
       );
     const seen = new Set<string>();
     for (let i = 1; i < end; i++) {
-      const match = /^(name|description):\s*(.+)$/.exec(lines[i]!);
+      const match = /^(name|description|display-name):\s*(.+)$/.exec(lines[i]!);
       if (!match || seen.has(match[1]!)) {
         retain(i);
         continue;
@@ -103,31 +111,55 @@ export function previewMarkdown(source: string): ImportPreview {
       seen.add(key);
       if (key === "name") {
         draft.id = value.trim();
-        draft.name = value.trim();
+        if (!explicitDisplayName) draft.name = value.trim();
+      } else if (key === "display-name") {
+        draft.name = value;
+        explicitDisplayName = true;
       } else draft.description = value;
     }
     start = end + 1;
   }
   let section: (typeof sections)[string] | undefined;
   let titled = false;
-  let fence: { char: string; length: number } | undefined;
+  let fence:
+    | {
+        char: string;
+        length: number;
+        owner?: { section: NonNullable<typeof section>; index: number };
+      }
+    | undefined;
   for (let i = start; i < lines.length; i++) {
     const line = lines[i]!;
-    const marker = /^\s*(`{3,}|~{3,})/.exec(line);
+    const marker = fenceOpening(line);
     if (fence) {
-      retain(i);
+      if (fence.owner) {
+        const { section: owner, index } = fence.owner;
+        draft[owner][index] +=
+          "\n" + (line.startsWith("  ") ? line.slice(2) : line);
+      } else retain(i);
       if (new RegExp(`^\\s*${fence.char}{${fence.length},}\\s*$`).test(line))
         fence = undefined;
       continue;
     }
+    if (section && line.startsWith("  ") && draft[section].length) {
+      const index = draft[section].length - 1;
+      draft[section][index] += "\n" + line.slice(2);
+      if (marker)
+        fence = {
+          char: marker[0]!,
+          length: marker.length,
+          owner: { section, index },
+        };
+      continue;
+    }
     if (marker) {
-      fence = { char: marker[1]![0]!, length: marker[1]!.length };
+      fence = { char: marker[0]!, length: marker.length };
       retain(i);
       continue;
     }
     const title = /^# (.+)$/.exec(line);
     if (title && !titled) {
-      draft.name = title[1]!;
+      if (!explicitDisplayName) draft.name = title[1]!;
       titled = true;
       section = undefined;
       continue;
@@ -147,11 +179,13 @@ export function previewMarkdown(source: string): ImportPreview {
     const bullet = /^(?:[-*+] |\d+[.)] )(.+)$/.exec(line);
     if (section && bullet) {
       draft[section].push(bullet[1]!);
-      continue;
-    }
-    if (section && line.startsWith("  ") && draft[section].length) {
-      const index = draft[section].length - 1;
-      draft[section][index] += "\n" + line.slice(2);
+      const opening = fenceOpening(bullet[1]!);
+      if (opening)
+        fence = {
+          char: opening[0]!,
+          length: opening.length,
+          owner: { section, index: draft[section].length - 1 },
+        };
       continue;
     }
     if (line === "> Unverified composition draft / 未验证的组合草案") continue;

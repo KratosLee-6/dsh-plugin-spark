@@ -58,3 +58,13 @@ The shipped adapter is a native DSH tool plugin, not an MCP server. A local patc
 Studio invalidates review on source changes and ignores stale preview responses. Editing any contract field clears confirmation. Source text, the preview fingerprint and unmapped content are not archived in SQLite; only reviewed Skill fields are persisted. Retain the original file if you need an import audit record. DSH confirmation is a host/user workflow, not an authorization token enforced by the parser.
 
 原文变化会使审阅失效，过期响应被忽略；编辑契约字段会撤销勾选。SQLite 只保存确认后的 Skill 字段，不归档原文、预览指纹或未映射内容；需要导入审计记录时请保留原文件。DSH 的用户确认依靠宿主流程，解析器不将其实现为授权令牌。
+
+## Audit hardening in 0.2.1 / 0.2.1 审计加固
+
+Collision previews expose a growth assessment using the same validation as actual growth. The store recomputes it for history and individual reads, including older saved rows. Capacity errors return `GROWTH_LIMIT`, preserving the full collision and asking the user to split or shorten parents; no fields are truncated. The optional TypeScript property keeps older consumers compatible without changing schema version 1 or collision identity.
+
+碰撞预览用实际生长的同一套校验评估容量。存储层读取单条与历史记录时重新评估，兼容旧数据。超限返回 `GROWTH_LIMIT`，保留完整碰撞并提示拆分或缩短父级，不截断字段。TypeScript 属性为可选，兼容旧调用方；不变更 schema 1 和碰撞标识。
+
+Skill import attempts an atomic insert first, then compares the actual stored content if the ID already exists. A competing writer cannot be mistaken for an idempotent success. After a successful save, growth or import, Studio reports the committed success independently of a subsequent failed library refresh.
+
+Skill 导入先尝试原子插入，编号已存在时读取实际存储内容进行比对，防止竞争写入被误报为幂等成功。保存、生长或导入已提交后，即使资料库刷新失败，工作室仍准确显示数据已保存。

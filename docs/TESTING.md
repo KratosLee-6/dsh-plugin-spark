@@ -1,6 +1,6 @@
 # Test evidence / 测试证据
 
-Evidence date / 记录日期: 2026-09-20. Version / 版本: 0.2.0.
+Evidence date / 记录日期: 2026-09-20. Version / 版本: 0.2.1.
 
 ## Environment / 环境
 
@@ -35,15 +35,15 @@ npm run test:ui
 | Check / 检查                      | Result / 结果                                                    | Scope / 范围                                                                                       |
 | --------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | TypeScript                        | Passed / 通过                                                    | Static types and build / 静态类型与构建                                                            |
-| Core and integration / 核心与集成 | 68 tests, 5 files / 68 项、5 个文件                              | Contracts, composition, persistence, plugin lifecycle, HTTP / 契约、组合、存储、插件生命周期、HTTP |
-| Browser / 浏览器                  | 8 tests / 8 项                                                   | Desktop and 390px layouts, bilingual flows / 桌面、390px、双语流程                                 |
+| Core and integration / 核心与集成 | 80 tests, 5 files / 80 项、5 个文件                              | Contracts, composition, persistence, plugin lifecycle, HTTP / 契约、组合、存储、插件生命周期、HTTP |
+| Browser / 浏览器                  | 11 tests / 11 项                                                   | Desktop and 390px layouts, bilingual flows / 桌面、390px、双语流程                                 |
 | Accessibility / 无障碍            | No violations in tested axe WCAG A/AA scans / 已测页面未发现违规 | Automated scan only / 仅自动扫描                                                                   |
 | DSH host / 宿主                   | Passed / 通过                                                    | Fresh isolated profile, patch load, 4 examples, HTTP 200 / 隔离配置、加载插件、4 个示例、页面响应  |
 | npm audit                         | 0 on 2026-09-18 / 9 月 18 日为 0                                 | v0.1 audit baseline; no dependencies changed / v0.1 审计基线，未变更依赖                           |
 
-Coverage for src/core.ts, src/store.ts, src/index.ts, src/server.ts and src/markdown.ts: **98.71% statements, 98.66% branches, 93.22% functions, 98.63% lines**. CLI, examples and Studio JavaScript are outside this coverage denominator; CLI and UI have separate smoke/browser checks.
+Coverage for src/core.ts, src/store.ts, src/index.ts, src/server.ts and src/markdown.ts: **97.98% statements, 97.18% branches, 93.44% functions, 98.15% lines**. CLI, examples and Studio JavaScript are outside this coverage denominator; CLI and UI have separate smoke/browser checks.
 
-覆盖率统计仅包含上述五个核心文件：语句 98.71%、分支 98.66%、函数 93.22%、行 98.63%。CLI、示例和 Studio JavaScript 不在分母内，另有冒烟与浏览器验证。高覆盖率不等于没有缺陷。
+覆盖率统计仅包含上述五个核心文件：语句 97.98%、分支 97.18%、函数 93.44%、行 98.15%。CLI、示例和 Studio JavaScript 不在分母内，另有冒烟与浏览器验证。高覆盖率不等于没有缺陷。
 
 Browser assertions cover collision, save, growth, SKILL.md download, history after reload, cancellation, reduced motion, missing inputs, malicious HTML treated as text, and truthful save-failure feedback. Tests generate the committed [English screenshot](screenshots/studio-en.png), [Chinese screenshot](screenshots/collision-zh.png) and [mobile-width screenshot](screenshots/mobile-en.png) using synthetic examples.
 
@@ -73,3 +73,9 @@ Markdown tests cover every bundled export, grown lineage/tags, multiline items, 
 Browser additions cover file selection, editable contracts, confirmation invalidation, reload persistence, imported-Skill collision, source-edit invalidation, stale failure responses, oversized files, save-failure recovery and switching back to JSON. New screenshots: [English review](screenshots/import-review-en.png), [Chinese review](screenshots/import-review-zh.png).
 
 浏览器新增覆盖选文件、编辑契约、确认失效、刷新恢复、导入后碰撞、原文变更、过期失败响应、超大文件、保存失败恢复及切回 JSON；审阅弹窗也纳入自动无障碍检查。
+
+## v0.2.1 audit regressions / 审计回归
+
+80 core/integration tests and 11 browser tests passed locally. Added assertions cover multiline display names, backtick/tilde fences at the start of an item, malformed/unclosed owned fences, 64,000-byte escaped transport, growth limits and history hydration, competing inserts, and committed-save/read-refresh failure. The competing-insert test uses a real SQLite BEFORE INSERT trigger to deterministically introduce a competing row; it is not a multiprocess stress benchmark.
+
+本地通过 80 项核心与集成测试、11 项浏览器测试。新增覆盖多行名称、条目首行反引号/波浪线围栏、缩进异常/未闭合围栏、64,000 字节原文转义传输、生长容量及历史恢复、竞争插入、保存成功后刷新失败。竞争写入用真实 SQLite BEFORE INSERT 触发器确定性插入竞争记录，并非多进程压力基准。详见 [审计报告](AUDIT-2026-09-20.md)。

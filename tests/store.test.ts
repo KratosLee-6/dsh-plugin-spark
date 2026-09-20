@@ -74,3 +74,24 @@ describe("SQLite persistence", () => {
     expect(() => new SparkStore(path)).toThrow("newer");
   });
 });
+it("never reports an ignored insert's unpersisted content as an idempotent success", () => {
+  const dir = mkdtempSync(join(tmpdir(), "spark-conflict-"));
+  dirs.push(dir);
+  const path = join(dir, "spark.db");
+  const s = open(path);
+  const competing = { ...examples[0]!, id: "contended", name: "Other writer" };
+  const db = new DatabaseSync(path);
+  // Deterministically insert a competing row between lookup and insert, at SQLite's actual write boundary.
+  const value = JSON.stringify(competing).replaceAll("'", "''");
+  db.exec(
+    `CREATE TRIGGER competing_insert BEFORE INSERT ON skills WHEN NEW.id='contended' BEGIN INSERT OR IGNORE INTO skills VALUES ('contended', '${value}'); END;`,
+  );
+  try {
+    expect(() => s.put({ ...competing, name: "This writer" })).toThrow(
+      "different content",
+    );
+    expect(s.skill("contended")).toEqual(competing);
+  } finally {
+    db.close();
+  }
+});

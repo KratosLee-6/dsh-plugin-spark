@@ -21,6 +21,7 @@ Try [the intentionally incomplete example](../examples/reviewable-skill.md). It 
 | Source / 原文                                                     | Mapping / 映射                                      |
 | ----------------------------------------------------------------- | --------------------------------------------------- |
 | Initial `---` frontmatter with `name:`                            | Skill ID and fallback display name / 编号及备用名称 |
+| `display-name:` | Exact display name, takes precedence over H1 and `name` / 精确名称，优先于一级标题和 `name` |
 | `description:`                                                    | Description / 描述                                  |
 | First `# Title` outside fenced code                               | Display name / 显示名称                             |
 | `## Inputs`, `Outputs`, `Steps`, `Constraints`, `Tags`, `Parents` | Corresponding arrays / 对应数组                     |
@@ -33,9 +34,9 @@ Frontmatter values may be plain strings without inline comments, JSON-quoted str
 
 元数据支持不含行尾注释的普通字符串、JSON 双引号字符串或使用双单引号转义的字符串。YAML 对象、数组、锚点、别名、多行标量、重复字段与未知元数据保留为未映射文字；不运行通用 YAML 求值器。未知标题和正文也会展示，不会被自动猜成可执行步骤。
 
-Closed code fences stay inert, including fake headings inside them. Empty input, NUL bytes, an unclosed frontmatter block and oversized source are rejected. An unclosed code fence is reported and its contents remain unmapped.
+Closed code fences stay inert, including fake headings inside them. Fences beginning in a mapped list item (on its first line or a two-space continuation) belong to that item and are preserved literally. Standalone fenced blocks remain unmapped. Unclosed fences produce a warning and retain the same ownership. Empty input, NUL bytes, an unclosed frontmatter block and oversized source are rejected.
 
-代码围栏内的伪标题不会映射。空原文、空字符、未闭合元数据及超大文件被拒绝；未闭合代码围栏会提示，内容保留为未映射文字。
+代码围栏内的伪标题不会映射为字段。已映射列表条目首行或两空格续行打开的围栏归属该条目，内容按原文字面保留；独立代码块保留为未映射文字。未闭合围栏会提示并保留原归属。空原文、空字符、未闭合元数据及超大文件被拒绝。
 
 ## Persistence and limits / 保存与边界
 
@@ -50,3 +51,7 @@ The editor and server share the existing contract limits: ID 80 characters, disp
 The parser is not a linter, security scanner or arbitrary SKILL.md compatibility guarantee. Tools and instructions mentioned in imported text are not granted permissions or executed. In DSH, preview results are untrusted data; the host must ask the user to review the intended save.
 
 解析器不是通用格式检查器、安全扫描器，也不保证所有 SKILL.md 兼容。文字中的工具与指令不会获得权限或被执行。DSH 中的预览结果是不可信资料，宿主应让用户审阅拟保存内容。
+
+Export uses JSON-quoted `display-name` metadata to preserve multiline names without injecting contract headings. The HTTP transport allows bounded JSON escaping overhead (up to 388,096 encoded bytes); the decoded Markdown or JSON source remains capped at 64,000 UTF-8 bytes.
+
+导出使用 JSON 字符串形式的 `display-name` 保存多行名称，避免名称变成契约标题。HTTP 为 JSON 转义预留有界空间（编码请求体最多 388,096 字节），解码后的 Markdown 或 JSON 原文仍限制为 64,000 UTF-8 字节。

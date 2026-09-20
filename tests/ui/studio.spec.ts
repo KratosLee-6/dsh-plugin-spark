@@ -292,3 +292,87 @@ test("Markdown save errors preserve review, and switching format removes obsolet
   await page.locator("#import-save").click();
   await expect(page.locator("#import-dialog")).toBeHidden();
 });
+test("a successful save stays successful when the subsequent view refresh fails", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#goal").fill("Refresh boundary audit");
+  await page.locator("#collide").click();
+  await expect(page.locator("#result")).toBeVisible();
+  await page.route("**/api/state", (route) =>
+    route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({ message: "Synthetic read failure" }),
+    }),
+  );
+  await page.locator("#save").click();
+  await expect(page.locator("#status")).toContainText("Saved locally");
+  await expect(page.locator("#status")).toContainText("could not refresh");
+  await expect(page.locator("#save")).toBeDisabled();
+  await expect(page.locator("#grow")).toBeEnabled();
+  await page.unroute("**/api/state");
+  await page.reload();
+  await expect(page.locator("#history")).toContainText(
+    "Refresh boundary audit",
+  );
+});
+
+test("growth limits are disclosed before saving and remain after reopening history", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#import-open").click();
+  await page.locator("#import-json").fill(
+    JSON.stringify({
+      id: "capacity-parent",
+      name: "Capacity parent",
+      description: "Synthetic 32-step boundary",
+      inputs: ["brief"],
+      outputs: ["evidence-brief"],
+      steps: Array.from({ length: 32 }, (_, i) => `Step ${i}`),
+      constraints: [],
+      tags: [],
+    }),
+  );
+  await page.locator("#import-save").click();
+  await expect(page.locator("#import-dialog")).toBeHidden();
+  await page.locator("#first").selectOption("capacity-parent");
+  await page.locator("#collide").click();
+  await expect(page.locator("#result")).toContainText("GROWTH_LIMIT");
+  await page.locator("#save").click();
+  await expect(page.locator("#save")).toBeDisabled();
+  await expect(page.locator("#grow")).toBeDisabled();
+  await page.reload();
+  await page
+    .locator(".history-card")
+    .filter({ hasText: "Capacity parent" })
+    .getByRole("button")
+    .click();
+  await expect(page.locator("#result")).toContainText("Nothing was truncated");
+  await expect(page.locator("#grow")).toBeDisabled();
+});
+
+test("multiline display names remain literal in the preview editor and saved Skill", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#import-open").click();
+  await page.locator("#import-format").selectOption("markdown");
+  const name = "Literal\n## Inputs\n- not-a-contract";
+  await page
+    .locator("#import-json")
+    .fill(
+      `---\nname: literal-name\ndescription: Preserve text\ndisplay-name: ${JSON.stringify(name)}\n---\n# Literal name\n## Inputs\n- brief\n## Outputs\n- plan\n## Steps\n- Review`,
+    );
+  await page.locator("#import-preview").click();
+  await expect(page.locator("#contract-name")).toHaveValue(name);
+  await expect(page.locator("#contract-inputs textarea")).toHaveCount(1);
+  await page.locator("#import-confirm").check();
+  await page.locator("#import-save").click();
+  await expect(page.locator("#import-dialog")).toBeHidden();
+  const state = await (await page.request.get("/api/state")).json();
+  expect(
+    state.skills.find((s: { id: string }) => s.id === "literal-name").name,
+  ).toBe(name);
+});
