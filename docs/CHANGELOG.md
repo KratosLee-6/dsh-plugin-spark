@@ -1,5 +1,11 @@
 # Changes / 更新记录
 
+## Unreleased · 2026-11-08 · host alignment / 宿主对齐
+
+- Move the compatibility target to `@deepseek-ai/dsh@0.2.2-rc.1`, `@deepseek-ai/dsh-tools@0.2.2-rc.1` and `@deepseek-ai/cordis@4.1.0`. / 兼容目标升级到 DSH 0.2.2-rc.1、工具包 0.2.2-rc.1、Cordis 4.1.0。
+- Adapt the integration test host to the new tool runtime contract: `ToolsService` no longer accepts `mode`, so the test mounts `@deepseek-ai/dsh-tool-executor-native` instead, and `tools.execute()` now takes a `{ calls: [...] }` batch and returns `{ results: [{ callId, result }] }`. / 集成测试宿主适配新工具运行时契约：不再接受 `mode`，改挂原生执行器；执行入口改为批量调用。生产代码未改动。
+- Regression on 0.2.2-rc.1: 90/90 unit+integration tests, typecheck, release verification and pinned-host smoke (fresh isolated profile, 4 synthetic skills, HTTP 200). No database schema change. / 在 0.2.2-rc.1 上回归：90/90 测试、类型检查、发布校验与锁定宿主冒烟通过。数据库 schema 不变。
+
 ## 0.3.0 · 2026-11-07
 
 - Growth relationships / 来源关系三分法: `spark_grow` and Studio now offer `derived_from_parents` (default, unchanged behavior), `novel_extension` (extend one parent with `extend: "a" | "b"`; the other parent informs the goal as inspiration only) and `independent_new_skill` (author-supplied `{inputs, outputs, steps}` draft; the engine never invents a contract). The chosen relationship is stamped on the Skill, persisted and shown in SKILL.md (`spark-relationship` frontmatter plus a Relationship section), and survives re-import. / 生长新增来源关系三分法：默认并入双侧、延伸一侧、独立草案（作者自备契约，引擎不代拟）；关系写入技能与导出并可往返导入。

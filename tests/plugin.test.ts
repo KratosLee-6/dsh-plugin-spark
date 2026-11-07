@@ -1,6 +1,7 @@
 import { afterEach, expect, it } from "vitest";
 import { Context } from "@deepseek-ai/cordis";
 import { ToolRuntime } from "@deepseek-ai/dsh-tools";
+import * as NativeToolExecutor from "@deepseek-ai/dsh-tool-executor-native";
 import SystemPrompt from "@deepseek-ai/dsh-system-prompt";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -18,22 +19,23 @@ async function host(config: spark.Config = {}) {
   const ctx = new Context();
   contexts.push(ctx);
   await ctx.plugin(SystemPrompt, {}).await();
-  await ctx.plugin(ToolRuntime, { mode: "native" }).await();
+  await ctx.plugin(ToolRuntime, {}).await();
+  await ctx.plugin(NativeToolExecutor, {}).await();
   const dataDir = mkdtempSync(join(tmpdir(), "spark-host-"));
   dirs.push(dataDir);
   const plugin = ctx.plugin(spark, { dataDir, ...config });
   await plugin.await();
-  const call = (
+  const call = async (
     name: string,
     args: unknown = {},
     signal = new AbortController().signal,
-  ) =>
-    ctx.tools.execute({
-      callId: "spark-test" as never,
-      name,
-      arguments: args,
+  ) => {
+    const batch = await ctx.tools.execute({
+      calls: [{ id: "spark-test", name, arguments: JSON.stringify(args) }],
       signal,
     });
+    return batch.results[0].result;
+  };
   return { ctx, plugin, call };
 }
 it("loads in the real Cordis + DSH ToolRuntime, dispatches the whole growth loop and unloads cleanly", async () => {

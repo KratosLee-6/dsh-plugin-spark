@@ -1,6 +1,12 @@
 # Test evidence / 测试证据
 
-Evidence date / 记录日期: 2026-11-07 (v0.3.0 growth relationships; v0.2.1 evidence retained below where still applicable). Version / 版本: 0.3.0.
+Evidence date / 记录日期: 2026-11-08 (host alignment to DSH 0.2.2-rc.1); v0.3.0 growth relationships and earlier evidence retained below where still applicable. Version / 版本: 0.3.0 + unreleased host alignment.
+
+## Host alignment / 宿主对齐 · 2026-11-08
+
+Local Windows verification on `@deepseek-ai/dsh@0.2.2-rc.1`, `@deepseek-ai/dsh-tools@0.2.2-rc.1` and `@deepseek-ai/cordis@4.1.0` (Node.js 24.15.0): 90/90 core+integration tests, `tsc --noEmit`, `verify:release` (26 archive entries), 12/12 browser tests through the Edge channel, and the pinned-host smoke (fresh isolated profile, absolute-path patch, four synthetic Skills, HTTP 200). The integration host now mounts `@deepseek-ai/dsh-tool-executor-native` and calls `tools.execute({ calls })`, because `ToolsService` no longer accepts `mode`. Production code needed no change.
+
+本地以 DSH 0.2.2-rc.1 回归：90/90 核心+集成测试、类型检查、发布校验（26 个归档条目）、12/12 浏览器测试、锁定宿主冒烟（全新隔离 profile、绝对路径 patch、4 个合成技能、HTTP 200）全部通过。集成宿主改挂原生工具执行器并改用批量调用入口，因为新版不再接受 `mode`；生产代码未改动。
 
 ## v0.3.0 additions / v0.3.0 补充
 
