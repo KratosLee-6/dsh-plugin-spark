@@ -49,7 +49,13 @@ npx --no-install dsh web --patch spark.patch.yml
 
 The helper writes an absolute plugin path and absolute database directory for your machine. It refuses to overwrite an existing patch. Move the checkout? Generate a fresh patch. **Do not commit your generated patch**: it contains local paths. The development dependencies include the pinned DSH CLI so the command does not silently download a different version.
 
-To use a separate DSH installation, pass the generated patch's absolute path to that installation's `dsh web --patch` command. The exact host runtime must satisfy the pinned peers. This release uses the documented local patch-loading route; one-click plugin-manager installation and npm publication are not claimed.
+The package also declares a bundle manifest, so a profile can install it in one command once it is on npm:
+
+```sh
+dsh plugin --profile web add dsh-plugin-spark   # or Plugins → Discover → Install
+```
+
+It is not on npm yet; the same route works today from a local tarball — `npm pack`, then `dsh plugin --profile web add ./dsh-plugin-spark-0.3.1.tgz`. That install writes the dependency, adds the package to `dsh.profile.bundles`, and the bundled [`cordis.patch.yml`](cordis.patch.yml) mounts the plugin. To use a separate DSH installation with a generated patch instead, pass its absolute path to that installation's `dsh web --patch` command; the exact host runtime must satisfy the pinned peers.
 
 Try this prompt in your configured DSH session:
 
@@ -93,7 +99,7 @@ The mobile layout is browser-tested at 390 px. This is **not** an iOS or Android
 
 ## Data and trust
 
-`--data-dir` / plugin `dataDir` controls the local SQLite directory (default `.spark` relative to the launching process). Studio and DSH can share the same directory; SQLite serializes committed writes and duplicate saves are idempotent. Use a local disk, not a network-mounted database. Stop both processes before copying `spark.db` for a backup; restore into an empty directory with both stopped. The database is not encrypted.
+`--data-dir` / plugin `dataDir` controls the local SQLite directory. When a DSH profile mounts the bundle without a `dataDir`, the default is `$DSH_HOME/spark`, falling back to `~/.dsh/spark`; the Studio `--data-dir` flag still defaults to `.spark` in the launching directory. Studio and DSH can share the same directory; SQLite serializes committed writes and duplicate saves are idempotent. Use a local disk, not a network-mounted database. Stop both processes before copying `spark.db` for a backup; restore into an empty directory with both stopped. The database is not encrypted.
 
 Studio binds only to `127.0.0.1`, validates Host/Origin and uses a per-process write token. It serves an explicit asset allowlist with a restrictive CSP. This reduces browser-origin attacks; it is not a sandbox against other processes running as your user. Do not expose its port publicly.
 

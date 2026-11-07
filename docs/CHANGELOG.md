@@ -1,10 +1,12 @@
 # Changes / 更新记录
 
-## Unreleased · 2026-11-08 · host alignment / 宿主对齐
+## 0.3.1 · 2026-11-08 · host alignment + bundle / 宿主对齐与 bundle
 
 - Move the compatibility target to `@deepseek-ai/dsh@0.2.2-rc.1`, `@deepseek-ai/dsh-tools@0.2.2-rc.1` and `@deepseek-ai/cordis@4.1.0`. / 兼容目标升级到 DSH 0.2.2-rc.1、工具包 0.2.2-rc.1、Cordis 4.1.0。
+- Declare `dsh.bundle` in `package.json` with a bundled `cordis.patch.yml`, so a profile installs the plugin with `dsh plugin add dsh-plugin-spark` (or Plugins → Discover) instead of a hand-written patch. / 新增 `dsh.bundle` 清单与包内 `cordis.patch.yml`，profile 可用 `dsh plugin add` 或插件市场一键安装，不再需要手写 patch。
+- Default plugin database directory when a profile mounts the bundle without `dataDir`: `$DSH_HOME/spark` (`~/.dsh/spark` when `DSH_HOME` is unset). The Studio `--data-dir` default is unchanged (`.spark`). / 以 bundle 挂载且未配置 `dataDir` 时，默认库目录改为 `$DSH_HOME/spark`（无该变量则 `~/.dsh/spark`）；Studio 的 `--data-dir` 默认不变。
 - Adapt the integration test host to the new tool runtime contract: `ToolsService` no longer accepts `mode`, so the test mounts `@deepseek-ai/dsh-tool-executor-native` instead, and `tools.execute()` now takes a `{ calls: [...] }` batch and returns `{ results: [{ callId, result }] }`. / 集成测试宿主适配新工具运行时契约：不再接受 `mode`，改挂原生执行器；执行入口改为批量调用。生产代码未改动。
-- Regression on 0.2.2-rc.1: 90/90 unit+integration tests, typecheck, release verification and pinned-host smoke (fresh isolated profile, 4 synthetic skills, HTTP 200). No database schema change. / 在 0.2.2-rc.1 上回归：90/90 测试、类型检查、发布校验与锁定宿主冒烟通过。数据库 schema 不变。
+- Regression on 0.2.2-rc.1: 90/90 unit+integration tests, typecheck, release verification and pinned-host smoke (fresh isolated profile, 4 synthetic skills, HTTP 200), plus a bundle install through `dsh plugin add` from a packed tarball. No database schema change. / 在 0.2.2-rc.1 上回归：90/90 测试、类型检查、发布校验、锁定宿主冒烟，以及用打包 tarball 走 `dsh plugin add` 的 bundle 安装验证。数据库 schema 不变。
 
 ## 0.3.0 · 2026-11-07
 
