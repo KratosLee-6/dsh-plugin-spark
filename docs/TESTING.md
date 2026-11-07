@@ -1,6 +1,14 @@
 # Test evidence / 测试证据
 
-Evidence date / 记录日期: 2026-09-20. Version / 版本: 0.2.1.
+Evidence date / 记录日期: 2026-11-07 (v0.3.0 growth relationships; v0.2.1 evidence retained below where still applicable). Version / 版本: 0.3.0.
+
+## v0.3.0 additions / v0.3.0 补充
+
+Local Windows verification (Node.js 24.15.0, Edge channel): 90 core/integration tests passed (`vitest run`, including 10 new relationship tests: three grow branches, option misuse, capacity wrapping for author drafts, export round-trip with `spark-relationship`, legacy import without relationship metadata, store persistence of relationship + inspiredBy); 12 browser tests passed (`playwright test` via Edge channel, including the grow-picker flow for novel_extension and independent drafts with history reopen). `npm run check`, `verify:release` and `format:check` passed. Not yet re-run in this cycle: pinned-host smoke and Windows/Linux CI matrix.
+
+本地 Windows 验证：90 项核心/集成测试通过（含 10 项关系新测试）；12 项浏览器测试通过（含延伸与独立草案的生长选择器与历史重开流程）；check / verify:release / format:check 通过。本轮未重跑：锁定宿主冒烟与 Windows/Linux CI 矩阵。
+
+## v0.2.1 evidence / v0.2.1 证据
 
 ## Environment / 环境
 

@@ -41,7 +41,13 @@ test("desktop bilingual collision, save, grow and export; local resources only",
   await page.locator("#save").click();
   await expect(page.locator("#save")).toBeDisabled();
   await page.locator("#grow").click();
+  await expect(page.locator("#grow-picker")).toBeVisible();
+  await expect(page.locator("#grow-picker")).toContainText(
+    "How should this draft grow?",
+  );
+  await page.locator("#grow-confirm").click({ force: true });
   await expect(page.locator("#download")).toBeVisible();
+  await expect(page.locator("#grow-picker")).toBeHidden();
   const download = page.waitForEvent("download");
   await page.locator("#download").click();
   expect((await download).suggestedFilename()).toBe("SKILL.md");
@@ -375,4 +381,62 @@ test("multiline display names remain literal in the preview editor and saved Ski
   expect(
     state.skills.find((s: { id: string }) => s.id === "literal-name").name,
   ).toBe(name);
+});
+
+test("grow picker supports novel_extension and independent drafts (v0.3.0)", async ({
+  page,
+}) => {
+  const failures: string[] = [];
+  page.on("pageerror", (e) => failures.push(e.message));
+  await page.goto("/");
+  await page.getByRole("button", { name: "Create a spark" }).click();
+  await expect(page.locator("#result")).toBeVisible();
+  await page.locator("#save").click({ force: true });
+  await expect(page.locator("#save")).toBeDisabled();
+
+  // novel_extension: side "a" is preselected; switching to "b" exercises the toggle.
+  await page.locator("#grow").click();
+  await page.locator('[data-grow-mode="novel_extension"]').click();
+  await expect(page.locator("#grow-picker")).toContainText("Extending parent:");
+  await expect(
+    page.locator('#grow-picker [data-grow-extend="a"]'),
+  ).toBeDisabled();
+  await page.locator('#grow-picker [data-grow-extend="b"]').click();
+  await expect(
+    page.locator('#grow-picker [data-grow-extend="b"]'),
+  ).toBeDisabled();
+  await page.locator("#grow-confirm").dispatchEvent("click");
+  await expect(page.locator("#download")).toBeVisible();
+  const extendDownload = page.waitForEvent("download");
+  await page.locator("#download").click();
+  const extension = await (await extendDownload).path();
+  expect(extension).toBeTruthy();
+
+  // Growing again requires reopening the saved spark from history (one grown
+  // draft per collision view — the same path a real user takes).
+  await page
+    .locator(".history-card")
+    .filter({ hasText: "Research Synthesis" })
+    .getByRole("button", { name: "Open spark ↗" })
+    .first()
+    .click();
+  await expect(page.locator("#grow")).toBeEnabled();
+
+  // independent: author-supplied contract, no parent steps.
+  await page.locator("#grow").click();
+  await page.locator('[data-grow-mode="independent_new_skill"]').click();
+  await expect(page.locator("#grow-draft-inputs")).toBeVisible();
+  await page.locator("#grow-draft-inputs").fill("release-notes");
+  await page.locator("#grow-draft-outputs").fill("claim-checklist");
+  await page.locator("#grow-draft-steps").fill("Split claims\nTriage each");
+  await page.locator("#grow-confirm").dispatchEvent("click");
+  await expect(page.locator("#download")).toBeVisible();
+  const soloDownload = page.waitForEvent("download");
+  await page.locator("#download").click();
+  const solo = await (await soloDownload).path();
+  expect(solo).toBeTruthy();
+
+  // The grown history card reports the relationship.
+  await expect(page.locator(".history-card").first()).toBeVisible();
+  expect(failures).toEqual([]);
 });

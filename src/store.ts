@@ -6,6 +6,7 @@ import {
   assessGrowth,
   grow,
   validateSkill,
+  type GrowOptions,
   SparkError,
   type Collision,
   type Language,
@@ -126,7 +127,11 @@ export class SparkStore {
       return { ...collision, growth: assessGrowth(collision) };
     });
   }
-  grow(id: string, name: string): { skill: Skill; created: boolean } {
-    return this.put(grow(this.collision(id), name));
+  grow(
+    id: string,
+    name: string,
+    options: GrowOptions = {},
+  ): { skill: Skill; created: boolean } {
+    return this.put(grow(this.collision(id), name, options));
   }
 }

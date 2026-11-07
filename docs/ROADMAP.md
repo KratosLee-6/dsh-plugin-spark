@@ -9,6 +9,7 @@ This roadmap covers Spark only. The complete product, standalone app and native-
 | v0.1 Foundation / 基础 | Six DSH tools, companion Studio, deterministic growth / 六工具、配套工作室与规则生长 | Core, browser, host smoke and archive checks / 核心、浏览器、宿主与包检查 |
 | v0.2 Import / 导入 | Reviewable SKILL.md import and seventh preview tool / 可审阅导入与第七个预览工具 | Unmapped content visible, no execution, reviewed round-trip / 未映射内容可见、不执行、审阅往返 |
 | v0.2.1 Audit / 审计 | Contract preservation, capacity disclosure, truthful persistence feedback / 契约保留、容量披露与准确保存反馈 | Targeted regressions and independent follow-up review / 针对性回归与独立复审 |
+| v0.3.0 Growth relationships / 来源关系 | Three-way lineage on grow (derived / extend / independent with author draft), persisted and export-reimportable / 生长三分法并支持导出往返 | Core, store, tool, browser regressions green / 核心、存储、工具与浏览器回归全绿 |
 | Contract adapters / 契约适配 | Explicit typed handoffs and human-approved bridges / 显式类型与人工确认桥接 | Mismatches fail visibly; synthetic fixtures verify conversions / 不匹配明确失败、合成样例验证 |
 | Plugin workspace portability / 插件数据迁移 | Versioned backup/restore for plugin Skills and collisions / 插件技能与碰撞的版本化备份恢复 | Validated restore, ID conflicts, failure safety and lineage preservation / 恢复、冲突、失败保护与来源保留 |
 | Host experience / 宿主体验 | DSH renderer if supported and actual agent integration / 接口支持时的结果卡与 Agent 集成 | Pinned-host tool flow, cancellation and failure paths / 锁定宿主流程、取消与失败验证 |
@@ -25,6 +26,6 @@ Optional model suggestions must be opt-in, disclose provider/data boundaries and
 
 ## Current checkpoint / 当前节点
 
-v0.2.1 is the current plugin checkpoint: 80 core/integration and 11 browser tests passed; Windows/Linux Node 22.19/24 and browser CI passed in [run 35509016049](https://github.com/KratosLee-6/dsh-plugin-spark/actions/runs/35509016049). These results belong to audit-fix commit `8ba4892`, not the standalone application. See [test evidence](TESTING.md), [audit](AUDIT-2026-09-20.md) and [import guide](IMPORT.md).
+v0.3.0 is the current plugin checkpoint: 90 core/integration tests pass locally; browser regression counts are refreshed in [test evidence](TESTING.md). These results cover the plugin only, not the standalone application. The next feature milestone is explicit contract adapters; backup/restore and host experience remain undelivered.
 
-当前插件节点为 v0.2.1：上述测试及 CI 对应审计整改提交，不代表主 App 的验收。下一功能节点是显式契约适配；备份恢复与宿主体验尚未交付。
+当前插件节点为 v0.3.0：90 项核心/集成测试本地通过，浏览器回归读数见测试证据页；该结果只覆盖插件，不代表主 App 验收。下一功能节点是显式契约适配；备份恢复与宿主体验尚未交付。

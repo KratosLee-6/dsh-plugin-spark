@@ -1,5 +1,11 @@
 # Changes / 更新记录
 
+## 0.3.0 · 2026-11-07
+
+- Growth relationships / 来源关系三分法: `spark_grow` and Studio now offer `derived_from_parents` (default, unchanged behavior), `novel_extension` (extend one parent with `extend: "a" | "b"`; the other parent informs the goal as inspiration only) and `independent_new_skill` (author-supplied `{inputs, outputs, steps}` draft; the engine never invents a contract). The chosen relationship is stamped on the Skill, persisted and shown in SKILL.md (`spark-relationship` frontmatter plus a Relationship section), and survives re-import. / 生长新增来源关系三分法：默认并入双侧、延伸一侧、独立草案（作者自备契约，引擎不代拟）；关系写入技能与导出并可往返导入。
+- Both parents' constraints stay attached under every relationship; the label describes step lineage, not verified quality. / 三种关系下父级约束均保留；标签描述步骤来源，不代表已验证质量。
+- No database schema change: existing workspaces stay readable; skills without a relationship remain unclassified. / 数据库 schema 不变，旧工作区可继续读取；无关系字段的技能不自动分类。
+
 ## 0.2.1 · 2026-09-20
 
 - Preserve multiline names and list-owned fenced code through export/import, keeping embedded headings inert. / 导出导入保留多行名称、列表内代码围栏，围栏标题不变成契约。

@@ -124,9 +124,35 @@ export function createStudio(store: SparkStore) {
             : { collision: store.preview(...args) },
         );
       } else if (path === "/api/grow") {
+        const relationship =
+          b.relationship === "novel_extension" ||
+          b.relationship === "independent_new_skill" ||
+          b.relationship === "derived_from_parents"
+            ? b.relationship
+            : undefined;
+        const rawDraft =
+          b.draft && typeof b.draft === "object" && !Array.isArray(b.draft)
+            ? (b.draft as Record<string, unknown>)
+            : undefined;
+        const draft =
+          rawDraft &&
+          Array.isArray(rawDraft.inputs) &&
+          Array.isArray(rawDraft.outputs) &&
+          Array.isArray(rawDraft.steps)
+            ? {
+                inputs: rawDraft.inputs as string[],
+                outputs: rawDraft.outputs as string[],
+                steps: rawDraft.steps as string[],
+              }
+            : undefined;
         const result = store.grow(
           text(b.id, "id", 80),
           text(b.name, "name", 120),
+          {
+            relationship,
+            extend: b.extend === "a" || b.extend === "b" ? b.extend : undefined,
+            draft,
+          },
         );
         reply(200, { ...result, markdown: skillMarkdown(result.skill) });
       } else if (path === "/api/import-preview") {

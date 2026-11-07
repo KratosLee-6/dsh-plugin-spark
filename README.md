@@ -9,11 +9,12 @@
 
 **Two skills are more useful when their connection is explicit.** Spark finds declared handoffs, shows what is missing, keeps both sets of constraints, and turns a saved composition into a new Skill draft that can participate in the next collision.
 
-> v0.2.1 is a **deterministic composition workbench**, not an autonomous skill executor or an AI discovery benchmark. A matching label is a lead to investigate, not proof of compatibility. Studio is a standalone companion UI using the same engine as the DSH tools; the screenshot is not an embedded DSH panel.
+> v0.3.0 is a **deterministic composition workbench**, not an autonomous skill executor or an AI discovery benchmark. A matching label is a lead to investigate, not proof of compatibility. Studio is a standalone companion UI using the same engine as the DSH tools; the screenshot is not an embedded DSH panel.
 
 ## What makes a spark?
 
 - **Compose, then grow.** Research Synthesis → Prototype Builder produces a draft; that draft can meet Accessibility Review in a second generation.
+- **Choose the lineage.** A grown draft declares its relationship: combine both parents, extend one side (the other stays inspiration), or stand alone with an author-supplied contract. Parent skills are sources and inspiration, never a bloodline constraint — and both parents' constraints stay attached under every relationship.
 - **Keep the roots.** Every collision stores source snapshots, an engine version, a content fingerprint, constraints and parent IDs.
 - **Make gaps useful.** Missing downstream inputs become explicit bridge requirements, not invented success scores.
 - **Own your workspace.** SQLite on your device, no telemetry, no external fonts, no runtime CDN and no model key required for Spark's engine or Studio.
@@ -73,7 +74,7 @@ In DSH, call `spark_preview_import` with `markdown`, show the draft and unmapped
 | `spark_inspect`        | Read a Skill, constraints and lineage                         | No                     |
 | `spark_import`         | Validate and import one structured Skill JSON                 | Yes, on request        |
 | `spark_collide`        | Compose A → B; report handoffs, gaps, plans and checks        | Only with `save: true` |
-| `spark_grow`           | Grow a saved collision into a reusable draft; return SKILL.md | Yes, on request        |
+| `spark_grow`           | Grow a saved collision into a reusable draft with an explicit relationship — `derived_from_parents` (default), `novel_extension` (`extend: "a"\|"b"`) or `independent_new_skill` (author-supplied draft); return SKILL.md | Yes, on request        |
 | `spark_history`        | Read up to 100 saved collisions with source snapshots         | No                     |
 
 Language argument: `en` (default) or `zh`. Names match after Unicode NFKC normalization, trimming and case normalization. The engine does **not** infer synonyms, parse actual output formats, resolve constraint conflicts or execute Skill instructions. User goals guide the human-readable draft and its identity, not an AI planner.

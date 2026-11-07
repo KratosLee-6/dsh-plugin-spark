@@ -47,6 +47,33 @@ describe("SQLite persistence", () => {
     expect(s.grow(preview.id, "Child").created).toBe(false);
     expect(s.skills()).toHaveLength(5);
   });
+  it("persists the grown relationship through the store (v0.3.0)", () => {
+    const s = open(),
+      a = examples[0]!.id,
+      b = examples[1]!.id;
+    const saved = s.save(a, b, "Standalone audit", "en");
+    const solo = s.grow(saved.collision.id, "Solo audit", {
+      relationship: "independent_new_skill",
+      draft: {
+        inputs: ["release-notes"],
+        outputs: ["claim-checklist"],
+        steps: ["Split claims", "Triage each claim"],
+      },
+    });
+    expect(solo.created).toBe(true);
+    expect(s.skill(solo.skill.id).relationship).toBe("independent_new_skill");
+    expect(s.skill(solo.skill.id).inspiredBy).toBe(saved.collision.id);
+    const extended = s.grow(saved.collision.id, "Extended", {
+      relationship: "novel_extension",
+      extend: "a",
+    });
+    expect(s.skill(extended.skill.id).relationship).toBe("novel_extension");
+    expect(() =>
+      s.grow(saved.collision.id, "Bad", {
+        relationship: "independent_new_skill",
+      }),
+    ).toThrow(/draft/);
+  });
   it("survives closing/reopening; two connections share committed records", () => {
     const dir = mkdtempSync(join(tmpdir(), "spark-test-"));
     dirs.push(dir);

@@ -1,6 +1,20 @@
 import { createHash } from "node:crypto";
 
 export type Language = "en" | "zh";
+/**
+ * Where a grown draft's steps come from. Registered in the AI--boom product
+ * repository on 2026-10-31 (owner ruling): parent skills are sources,
+ * inspiration and optional methods — never a bloodline constraint. A grown
+ * Skill may combine both parents, extend one, or stand alone as long as its
+ * own contract is complete and reviewable.
+ */
+export type Relationship =
+  "derived_from_parents" | "novel_extension" | "independent_new_skill";
+export const RELATIONSHIPS: Relationship[] = [
+  "derived_from_parents",
+  "novel_extension",
+  "independent_new_skill",
+];
 export interface Skill {
   id: string;
   name: string;
@@ -11,6 +25,22 @@ export interface Skill {
   constraints: string[];
   tags: string[];
   parents: string[];
+  relationship?: Relationship;
+  /** Collision that triggered the draft when parents are inspiration only. */
+  inspiredBy?: string;
+}
+export interface IndependentDraft {
+  inputs: string[];
+  outputs: string[];
+  steps: string[];
+}
+export interface GrowOptions {
+  /** Defaults to "derived_from_parents" for backward compatibility. */
+  relationship?: Relationship | undefined;
+  /** Required when relationship is "novel_extension": which parent's steps extend. */
+  extend?: "a" | "b" | undefined;
+  /** Required when relationship is "independent_new_skill": author-supplied contract. */
+  draft?: IndependentDraft | undefined;
 }
 export interface GrowthAssessment {
   allowed: boolean;
@@ -84,6 +114,27 @@ export function validateSkill(value: unknown): Skill {
       "INVALID_ID",
       "Use lowercase letters, digits and hyphens for the skill ID",
     );
+  let relationship: Relationship | undefined;
+  if (s.relationship !== undefined) {
+    if (
+      typeof s.relationship !== "string" ||
+      !RELATIONSHIPS.includes(s.relationship as Relationship)
+    )
+      throw new SparkError(
+        "INVALID_RELATIONSHIP",
+        `relationship must be one of: ${RELATIONSHIPS.join(", ")}`,
+      );
+    relationship = s.relationship as Relationship;
+  }
+  let inspiredBy: string | undefined;
+  if (s.inspiredBy !== undefined) {
+    inspiredBy = text(s.inspiredBy, "inspiredBy", 120);
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(inspiredBy))
+      throw new SparkError(
+        "INVALID_ID",
+        "inspiredBy must use the same character rules as a skill ID",
+      );
+  }
   return {
     id,
     name: text(s.name, "name", 120),
@@ -94,6 +145,8 @@ export function validateSkill(value: unknown): Skill {
     constraints: list(s.constraints, "constraints"),
     tags: list(s.tags, "tags"),
     parents: list(s.parents ?? [], "parents"),
+    ...(relationship ? { relationship } : {}),
+    ...(inspiredBy ? { inspiredBy } : {}),
   };
 }
 export function parseSkillJSON(source: string): Skill {
@@ -187,13 +240,102 @@ export function collide(
   return collision;
 }
 
-export function grow(collision: Collision, rawName: string): Skill {
+export function grow(
+  collision: Collision,
+  rawName: string,
+  options: GrowOptions = {},
+): Skill {
   const name = text(rawName, "name", 120);
+  const relationship = options.relationship ?? "derived_from_parents";
+  if (!RELATIONSHIPS.includes(relationship))
+    throw new SparkError(
+      "INVALID_RELATIONSHIP",
+      `relationship must be one of: ${RELATIONSHIPS.join(", ")}`,
+    );
   const [a, b] = collision.parents;
-  const id = `grown-${digest({ collision: collision.fingerprint, name }).slice(0, 20)}`;
+  // Different relationships from the same collision are different drafts:
+  // the id must not collide when a user grows more than one lineage.
+  const baseId = `grown-${digest({
+    collision: collision.fingerprint,
+    name,
+    relationship,
+  }).slice(0, 20)}`;
+  const zh = collision.language === "zh";
   try {
+    if (relationship === "independent_new_skill") {
+      if (options.extend)
+        throw new SparkError(
+          "INVALID_GROW_OPTIONS",
+          'extend applies only to relationship "novel_extension"',
+        );
+      if (!options.draft)
+        throw new SparkError(
+          "INVALID_GROW_OPTIONS",
+          'relationship "independent_new_skill" requires a draft with inputs, outputs and steps supplied by the author; the engine never invents them. / 独立草案需要作者自备 inputs/outputs/steps，引擎不代拟。',
+        );
+      const draft = options.draft;
+      return validateSkill({
+        id: `independent-${digest({
+          collision: collision.fingerprint,
+          name,
+          relationship,
+        }).slice(0, 20)}`,
+        name,
+        description: collision.goal,
+        inputs: draft.inputs,
+        outputs: draft.outputs,
+        steps: draft.steps,
+        constraints: [...new Set(collision.constraints.map((c) => c.text))],
+        tags: ["spark-grown", "unverified-draft", "independent-draft"],
+        parents: [],
+        relationship,
+        inspiredBy: collision.id,
+      });
+    }
+    if (relationship === "novel_extension") {
+      if (options.draft)
+        throw new SparkError(
+          "INVALID_GROW_OPTIONS",
+          'draft applies only to relationship "independent_new_skill"',
+        );
+      if (options.extend !== "a" && options.extend !== "b")
+        throw new SparkError(
+          "INVALID_GROW_OPTIONS",
+          'relationship "novel_extension" requires extend: "a" or "b" (whose steps this draft extends)',
+        );
+      const base = options.extend === "a" ? a : b;
+      const other = options.extend === "a" ? b : a;
+      const inspirationStep = zh
+        ? `灵感来源 / 灵感来源说明：父级「${other.name}」启发了本目标，但其步骤未并入本草案。`
+        : `Inspiration: parent "${other.name}" informed this goal; its steps are intentionally not included.`;
+      return validateSkill({
+        id: baseId,
+        name,
+        description: collision.goal,
+        inputs:
+          options.extend === "b"
+            ? [...new Set([...base.inputs, ...collision.gaps])]
+            : base.inputs,
+        outputs: base.outputs,
+        steps: [
+          ...base.steps.map(
+            (step) => `[${options.extend!.toUpperCase()}] ${step}`,
+          ),
+          inspirationStep,
+        ],
+        constraints: [...new Set(collision.constraints.map((c) => c.text))],
+        tags: ["spark-grown", "unverified-draft"],
+        parents: [a.id, b.id],
+        relationship,
+      });
+    }
+    if (options.extend || options.draft)
+      throw new SparkError(
+        "INVALID_GROW_OPTIONS",
+        'extend/draft apply only to "novel_extension" / "independent_new_skill"',
+      );
     return validateSkill({
-      id,
+      id: baseId,
       name,
       description: collision.goal,
       inputs: [...new Set([...a.inputs, ...collision.gaps])],
@@ -208,13 +350,24 @@ export function grow(collision: Collision, rawName: string): Skill {
       constraints: [...new Set(collision.constraints.map((c) => c.text))],
       tags: ["spark-grown", "unverified-draft"],
       parents: [a.id, b.id],
+      relationship,
     });
   } catch (error) {
     if (!(error instanceof SparkError)) throw error;
-    throw new SparkError(
-      "GROWTH_LIMIT",
-      `GROWTH_LIMIT: Combined contract exceeds Skill limits. Split or shorten the parent Skills, then collide again. Nothing was truncated. / 组合超出技能容量，请拆分或缩短父级后重新碰撞，内容未截断。 (${error.message})`,
-    );
+    if (
+      error.code === "INVALID_GROW_OPTIONS" ||
+      error.code === "INVALID_RELATIONSHIP" ||
+      error.code === "INVALID_ID"
+    )
+      throw error;
+    if (error.code === "INVALID_INPUT")
+      throw new SparkError(
+        "GROWTH_LIMIT",
+        options.draft
+          ? `GROWTH_LIMIT: The supplied independent draft exceeds Skill limits. Trim it, then grow again. Nothing was truncated. / 独立草案超出技能容量，请精简后重试，内容未截断。 (${error.message})`
+          : `GROWTH_LIMIT: Combined contract exceeds Skill limits. Split or shorten the parent Skills, then collide again. Nothing was truncated. / 组合超出技能容量，请拆分或缩短父级后重新碰撞，内容未截断。 (${error.message})`,
+      );
+    throw error;
   }
 }
 export function assessGrowth(collision: Collision): GrowthAssessment {
@@ -232,5 +385,23 @@ export function skillMarkdown(skill: Skill): string {
   const s = validateSkill(skill);
   const bullets = (items: string[]) =>
     items.map((v) => `- ${v.replaceAll("\n", "\n  ")}`).join("\n");
-  return `---\nname: ${JSON.stringify(s.id)}\ndescription: ${JSON.stringify(s.description)}\ndisplay-name: ${JSON.stringify(s.name)}\n---\n\n# ${s.name.replace(/\r\n?|\n/g, " ")}\n\n> Unverified composition draft / 未验证的组合草案\n\n## Inputs / 输入\n${bullets(s.inputs)}\n\n## Outputs / 输出\n${bullets(s.outputs)}\n\n## Steps / 步骤\n${bullets(s.steps)}\n\n## Constraints / 约束\n${bullets(s.constraints)}\n\n## Tags / 标签\n${bullets(s.tags)}\n\n## Parents / 来源\n${bullets(s.parents)}\n`;
+  const relationship: Relationship | undefined = s.relationship;
+  const relationshipText: Record<Relationship, string> = {
+    derived_from_parents:
+      "Both parents' steps are included. / 两侧父级步骤均并入本草案。",
+    novel_extension:
+      "Extends one parent's steps; the other parent informed the goal as inspiration only. / 延伸一侧父级的步骤；另一侧仅作为灵感来源。",
+    independent_new_skill:
+      "Independent draft: the contract was supplied by the author; parents are inspiration only. / 独立草案：契约由作者提供；父级仅作灵感来源。",
+  };
+  const relationshipSection = relationship
+    ? `## Relationship / 来源关系\n- spark-relationship: ${relationship}\n- ${relationshipText[relationship]}${
+        s.inspiredBy
+          ? `\n- Inspired by collision / 由碰撞触发: ${s.inspiredBy}`
+          : ""
+      }\n\n`
+    : "";
+  return `---\nname: ${JSON.stringify(s.id)}\ndescription: ${JSON.stringify(s.description)}\ndisplay-name: ${JSON.stringify(s.name)}${
+    relationship ? `\nspark-relationship: ${relationship}` : ""
+  }\n---\n\n# ${s.name.replace(/\r\n?|\n/g, " ")}\n\n> Unverified composition draft / 未验证的组合草案\n\n${relationshipSection}## Inputs / 输入\n${bullets(s.inputs)}\n\n## Outputs / 输出\n${bullets(s.outputs)}\n\n## Steps / 步骤\n${bullets(s.steps)}\n\n## Constraints / 约束\n${bullets(s.constraints)}\n\n## Tags / 标签\n${bullets(s.tags)}\n\n## Parents / 来源\n${bullets(s.parents)}\n`;
 }

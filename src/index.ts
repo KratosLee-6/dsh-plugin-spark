@@ -1,7 +1,12 @@
 import type { Context } from "@deepseek-ai/cordis";
 import { defineTool, type ToolDefinition } from "@deepseek-ai/dsh-tools";
 import { resolve } from "node:path";
-import { parseSkillJSON, skillMarkdown } from "./core.js";
+import {
+  parseSkillJSON,
+  skillMarkdown,
+  RELATIONSHIPS,
+  type Relationship,
+} from "./core.js";
 import { SparkStore } from "./store.js";
 import { previewMarkdown } from "./markdown.js";
 import { examples } from "./examples.js";
@@ -123,12 +128,64 @@ export function createTools(store: SparkStore): ToolDefinition[] {
     defineTool({
       name: "spark_grow",
       description:
-        "Persist a new, unverified Skill draft from a SAVED collision, retaining parent IDs, input gaps and constraints. Returns SKILL.md text; never installs or executes it. Use on user request. 将已保存碰撞生长为新草案。",
-      parameters: { collision_id: str, name: str },
+        'Persist a new, unverified Skill draft from a SAVED collision. relationship picks the lineage: derived_from_parents (default; both parents\' steps), novel_extension (extend one parent, requires extend: "a"|"b"), or independent_new_skill (author-supplied draft with inputs/outputs/steps; parents are inspiration only). Returns SKILL.md text; never installs or executes it. Use on user request. 将已保存碰撞生长为新草案；来源关系三选一。',
+      parameters: {
+        collision_id: str,
+        name: str,
+        relationship: {
+          type: "string",
+          enum: [
+            "derived_from_parents",
+            "novel_extension",
+            "independent_new_skill",
+          ],
+          description:
+            "Where the draft's steps come from. Default: derived_from_parents. / 步骤来源，默认双侧并入",
+        },
+        extend: {
+          type: "string",
+          enum: ["a", "b"],
+          description:
+            "Required only for novel_extension: which parent's steps extend. / 仅 novel_extension 必填",
+        },
+        draft: {
+          type: "json",
+          description:
+            "Required only for independent_new_skill: {inputs:[], outputs:[], steps:[]} supplied by the author. / 仅独立草案必填，作者自备契约",
+        },
+      },
       output,
       async execute(args, exec) {
         exec.signal.throwIfAborted();
-        const result = store.grow(args.collision_id, args.name);
+        const relationship = RELATIONSHIPS.includes(
+          args.relationship as Relationship,
+        )
+          ? (args.relationship as Relationship)
+          : undefined;
+        const extend =
+          args.extend === "a" || args.extend === "b" ? args.extend : undefined;
+        const raw =
+          args.draft &&
+          typeof args.draft === "object" &&
+          !Array.isArray(args.draft)
+            ? (args.draft as Record<string, unknown>)
+            : undefined;
+        const draft =
+          raw &&
+          Array.isArray(raw.inputs) &&
+          Array.isArray(raw.outputs) &&
+          Array.isArray(raw.steps)
+            ? {
+                inputs: raw.inputs as string[],
+                outputs: raw.outputs as string[],
+                steps: raw.steps as string[],
+              }
+            : undefined;
+        const result = store.grow(args.collision_id, args.name, {
+          relationship,
+          extend,
+          draft,
+        });
         return json({ ...result, markdown: skillMarkdown(result.skill) });
       },
     }),

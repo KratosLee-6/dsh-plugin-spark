@@ -7,6 +7,7 @@ import {
   validateSkill,
   text,
 } from "../src/core.js";
+import { previewMarkdown } from "../src/markdown.js";
 import { examples } from "../src/examples.js";
 const [a, b, c, d] = examples;
 describe("contract composition", () => {
@@ -133,4 +134,102 @@ it("discloses growth capacity before offering a draft and never truncates parent
     "Keep text",
   );
   expect(long.growth.allowed).toBe(false);
+});
+
+describe("growth relationships (v0.3.0)", () => {
+  const collision = collide(a!, b!, "Make a testable prototype");
+  it("defaults to derived_from_parents and stamps the relationship", () => {
+    const skill = grow(collision, "Combined draft");
+    expect(skill.relationship).toBe("derived_from_parents");
+    expect(skill.steps.some((s) => s.startsWith("[A] "))).toBe(true);
+    expect(skill.steps.some((s) => s.startsWith("[B] "))).toBe(true);
+    expect(skill.parents).toEqual([a!.id, b!.id]);
+    expect(skillMarkdown(skill)).toContain(
+      "spark-relationship: derived_from_parents",
+    );
+  });
+  it("novel_extension keeps only the extended parent's steps and marks the other as inspiration", () => {
+    const skill = grow(collision, "Extended draft", {
+      relationship: "novel_extension",
+      extend: "a",
+    });
+    expect(skill.relationship).toBe("novel_extension");
+    expect(skill.steps.some((s) => s.startsWith("[A] "))).toBe(true);
+    expect(skill.steps.some((s) => s.startsWith("[B] "))).toBe(false);
+    expect(skill.steps.join(" ")).toMatch(/inspiration/i);
+    expect(skill.parents).toEqual([a!.id, b!.id]);
+    const md = skillMarkdown(skill);
+    expect(md).toContain("spark-relationship: novel_extension");
+    expect(md).toContain("## Relationship");
+  });
+  it("novel_extension requires the extend choice", () => {
+    expect(() =>
+      grow(collision, "X", { relationship: "novel_extension" }),
+    ).toThrowError(/extend/);
+  });
+  it("independent_new_skill uses the author-supplied contract and records inspiration only", () => {
+    const skill = grow(collision, "Solo draft", {
+      relationship: "independent_new_skill",
+      draft: {
+        inputs: ["release-notes"],
+        outputs: ["claim-checklist"],
+        steps: ["Split claims", "Triage each claim"],
+      },
+    });
+    expect(skill.relationship).toBe("independent_new_skill");
+    expect(skill.parents).toEqual([]);
+    expect(skill.inspiredBy).toBe(collision.id);
+    expect(skill.tags).toContain("independent-draft");
+    expect(skill.steps.join(" ")).not.toContain("[A] ");
+    const md = skillMarkdown(skill);
+    expect(md).toContain("spark-relationship: independent_new_skill");
+    expect(md).toContain("Inspired by collision");
+  });
+  it("independent_new_skill requires the author draft; the engine never invents one", () => {
+    expect(() =>
+      grow(collision, "X", { relationship: "independent_new_skill" }),
+    ).toThrowError(/draft/);
+  });
+  it("rejects misplaced options and unknown relationships", () => {
+    expect(() =>
+      grow(collision, "X", {
+        relationship: "independent_new_skill",
+        extend: "a",
+        draft: { inputs: ["i"], outputs: ["o"], steps: ["s"] },
+      }),
+    ).toThrowError(/extend/);
+    expect(() =>
+      grow(collision, "X", { relationship: "orphan" as never }),
+    ).toThrowError(/relationship must be one of/);
+  });
+  it("keeps constraints protective regardless of relationship", () => {
+    const derived = grow(collision, "D");
+    const novel = grow(collision, "N", {
+      relationship: "novel_extension",
+      extend: "b",
+    });
+    const solo = grow(collision, "S", {
+      relationship: "independent_new_skill",
+      draft: { inputs: ["i"], outputs: ["o"], steps: ["s"] },
+    });
+    for (const skill of [derived, novel, solo])
+      expect(skill.constraints).toHaveLength(4);
+  });
+  it("re-imports an exported grown draft with its relationship intact", () => {
+    const skill = grow(collision, "Round trip", {
+      relationship: "independent_new_skill",
+      draft: { inputs: ["i"], outputs: ["o"], steps: ["s"] },
+    });
+    const preview = previewMarkdown(skillMarkdown(skill));
+    expect(preview.valid).toBe(true);
+    expect(preview.draft.relationship).toBe("independent_new_skill");
+    expect(preview.draft.inspiredBy).toBe(collision.id);
+    expect(preview.unparsed).toEqual([]);
+  });
+  it("still imports legacy SKILL.md without relationship metadata", () => {
+    const legacy = skillMarkdown({ ...a!, tags: [], parents: [] });
+    const preview = previewMarkdown(legacy);
+    expect(preview.draft.relationship).toBeUndefined();
+    expect(preview.valid).toBe(true);
+  });
 });

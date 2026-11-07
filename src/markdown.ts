@@ -1,4 +1,11 @@
-import { SparkError, digest, validateSkill, type Skill } from "./core.js";
+import {
+  SparkError,
+  digest,
+  validateSkill,
+  RELATIONSHIPS,
+  type Relationship,
+  type Skill,
+} from "./core.js";
 
 export interface ImportPreview {
   draft: Skill;
@@ -79,7 +86,10 @@ export function previewMarkdown(source: string): ImportPreview {
       );
     const seen = new Set<string>();
     for (let i = 1; i < end; i++) {
-      const match = /^(name|description|display-name):\s*(.+)$/.exec(lines[i]!);
+      const match =
+        /^(name|description|display-name|spark-relationship):\s*(.+)$/.exec(
+          lines[i]!,
+        );
       if (!match || seen.has(match[1]!)) {
         retain(i);
         continue;
@@ -108,6 +118,13 @@ export function previewMarkdown(source: string): ImportPreview {
         retain(i);
         continue;
       }
+      if (key === "spark-relationship") {
+        if (RELATIONSHIPS.includes(value.trim() as Relationship)) {
+          draft.relationship = value.trim() as Relationship;
+          seen.add(key);
+        } else retain(i);
+        continue;
+      }
       seen.add(key);
       if (key === "name") {
         draft.id = value.trim();
@@ -120,6 +137,7 @@ export function previewMarkdown(source: string): ImportPreview {
     start = end + 1;
   }
   let section: (typeof sections)[string] | undefined;
+  let relationshipSection = false;
   let titled = false;
   let fence:
     | {
@@ -167,16 +185,47 @@ export function previewMarkdown(source: string): ImportPreview {
     const heading = /^## (.+)$/.exec(line);
     if (heading) {
       const key = heading[1]!.split("/")[0]!.trim().toLowerCase();
+      if (key === "relationship" || key === "来源关系") {
+        section = undefined;
+        relationshipSection = true;
+        continue;
+      }
+      relationshipSection = false;
       section = Object.hasOwn(sections, key) ? sections[key] : undefined;
       if (!section) retain(i);
       continue;
     }
     if (/^#{1,6}\s/.test(line)) {
       section = undefined;
+      relationshipSection = false;
       retain(i);
       continue;
     }
     const bullet = /^(?:[-*+] |\d+[.)] )(.+)$/.exec(line);
+    if (relationshipSection && bullet) {
+      // Known exporter notes are consumed; only the two machine-readable
+      // patterns carry data. Anything else in this section stays visible.
+      const rel = /^spark-relationship:\s*(.+)$/.exec(bullet[1]!);
+      if (rel && RELATIONSHIPS.includes(rel[1]!.trim() as Relationship)) {
+        draft.relationship = rel[1]!.trim() as Relationship;
+        continue;
+      }
+      const inspired = /^Inspired by collision \/ 由碰撞触发:\s*(.+)$/.exec(
+        bullet[1]!,
+      );
+      if (inspired) {
+        draft.inspiredBy = inspired[1]!.trim();
+        continue;
+      }
+      if (
+        bullet[1]!.startsWith("Independent draft:") ||
+        bullet[1]!.startsWith("Both parents' steps") ||
+        bullet[1]!.startsWith("Extends one parent's steps")
+      )
+        continue;
+      retain(i);
+      continue;
+    }
     if (section && bullet) {
       draft[section].push(bullet[1]!);
       const opening = fenceOpening(bullet[1]!);

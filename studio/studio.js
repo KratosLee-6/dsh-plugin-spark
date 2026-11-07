@@ -80,6 +80,18 @@ const copy = {
     grow: "Grow a Skill",
     download: "Export SKILL.md",
     grown: "New Skill added to your library. It is an unverified draft.",
+    growTitle: "How should this draft grow?",
+    growDerived: "Combine both parents",
+    growExtend: "Extend one side",
+    growIndependent: "Independent draft",
+    extendBase: "Extending parent:",
+    draftInputs: "Inputs (one per line)",
+    draftOutputs: "Outputs (one per line)",
+    draftSteps: "Steps (one per line)",
+    confirmGrow: "Grow",
+    cancelGrow: "Cancel",
+    growNote:
+      "Both parents' constraints stay attached. The relationship label describes step lineage, not verified quality.",
     noHistory: "No saved sparks yet. Start with a small experiment.",
     open: "Open spark",
     working: "Finding the connection…",
@@ -160,6 +172,18 @@ const copy = {
     grow: "生长为新 Skill",
     download: "导出 SKILL.md",
     grown: "新 Skill 已加入资料库，状态为未验证草案。",
+    growTitle: "这份草案以哪种来源关系生长？",
+    growDerived: "并入两侧父级",
+    growExtend: "延伸一侧",
+    growIndependent: "独立草案",
+    extendBase: "延伸的父级：",
+    draftInputs: "输入（每行一个）",
+    draftOutputs: "输出（每行一个）",
+    draftSteps: "步骤（每行一个）",
+    confirmGrow: "生长",
+    cancelGrow: "取消",
+    growNote:
+      "两侧父级约束始终保留；关系标签描述步骤来源，不代表已验证的质量。",
     noHistory: "还没有保存的闪光。从一次小实验开始吧。",
     open: "打开闪光",
     working: "正在寻找连接…",
@@ -177,6 +201,7 @@ let lang = "en",
   result,
   saved = false,
   grown,
+  growChoice,
   controller,
   toastTimer;
 const t = (key) => copy[lang][key];
@@ -273,12 +298,50 @@ function renderHistory() {
         .join("")
     : `<div class="history-empty">${t("noHistory")}</div>`;
 }
+function renderGrowPicker() {
+  const host = $("grow-picker");
+  if (!host) return;
+  if (!growChoice || !saved || grown || result?.growth?.allowed === false) {
+    host.innerHTML = "";
+    host.hidden = true;
+    return;
+  }
+  const mode = (value, label) =>
+    `<button class="quiet" data-grow-mode="${value}" ${growChoice.relationship === value ? "disabled" : ""}>${label}</button>`;
+  let extra = "";
+  if (growChoice.relationship === "novel_extension") {
+    const names = result ? result.parents.map((p) => p.name) : ["A", "B"];
+    extra =
+      `<p class="subtle">${escape(t("extendBase"))}</p><div class="result-buttons">` +
+      ["a", "b"]
+        .map(
+          (side, i) =>
+            `<button class="quiet" data-grow-extend="${side}" ${growChoice.extend === side ? "disabled" : ""}>${side.toUpperCase()} · ${escape(names[i])}</button>`,
+        )
+        .join("") +
+      `</div>`;
+  }
+  if (growChoice.relationship === "independent_new_skill") {
+    extra =
+      `<label class="grow-field">${escape(t("draftInputs"))}<textarea id="grow-draft-inputs" rows="3" spellcheck="false"></textarea></label>` +
+      `<label class="grow-field">${escape(t("draftOutputs"))}<textarea id="grow-draft-outputs" rows="3" spellcheck="false"></textarea></label>` +
+      `<label class="grow-field">${escape(t("draftSteps"))}<textarea id="grow-draft-steps" rows="5" spellcheck="false"></textarea></label>`;
+  }
+  host.innerHTML =
+    `<div class="grow-picker-inner"><p class="subtle">${escape(t("growTitle"))}</p>` +
+    `<div class="result-buttons">${mode("derived_from_parents", t("growDerived"))}${mode("novel_extension", t("growExtend"))}${mode("independent_new_skill", t("growIndependent"))}</div>` +
+    extra +
+    `<p class="subtle">${escape(t("growNote"))}</p>` +
+    `<div class="result-buttons"><button id="grow-confirm" class="primary">${escape(t("confirmGrow"))} ↗</button><button id="grow-cancel" class="quiet">${escape(t("cancelGrow"))}</button></div></div>`;
+  host.hidden = false;
+}
+
 function renderResult() {
   if (!result) return;
   $("empty-result").hidden = true;
   $("result").hidden = false;
   $("result").innerHTML =
-    `<div class="result-header"><h3 id="result-title">${escape(result.title)}</h3><span class="match ${result.gaps.length ? "gap" : ""}">${t(result.gaps.length ? "gap" : "ready")}</span></div><p class="disclaimer">${escape(result.disclaimer)}</p><div class="handoff"><strong>${t("handoff")}</strong> · ${escape(result.handoffs.join(" → ") || t("none"))}${result.gaps.length ? `<br><strong>${t("missing")}</strong> · ${escape(result.gaps.join(" · "))}` : ""}</div><ol class="plan">${result.plan.map((p) => `<li>${escape(p)}</li>`).join("")}</ol><details><summary>${t("constraints")}</summary><ul>${result.constraints.map((c) => `<li><strong>${escape(c.skillId)}</strong> · ${escape(c.text)}</li>`).join("")}${result.checks.map((c) => `<li>${escape(c)}</li>`).join("")}</ul></details>${result.growth?.allowed === false ? `<p class="growth-limit" role="status">${escape(result.growth.reason)}</p>` : ""}<div class="result-buttons"><button id="save" class="primary" ${saved ? "disabled" : ""}>${t(saved ? "saved" : "save")}</button><button id="grow" class="quiet" ${!saved || grown || result.growth?.allowed === false ? "disabled" : ""}>${t("grow")} ↗</button>${grown ? `<button id="download" class="quiet">${t("download")} ↓</button>` : ""}</div>`;
+    `<div class="result-header"><h3 id="result-title">${escape(result.title)}</h3><span class="match ${result.gaps.length ? "gap" : ""}">${t(result.gaps.length ? "gap" : "ready")}</span></div><p class="disclaimer">${escape(result.disclaimer)}</p><div class="handoff"><strong>${t("handoff")}</strong> · ${escape(result.handoffs.join(" → ") || t("none"))}${result.gaps.length ? `<br><strong>${t("missing")}</strong> · ${escape(result.gaps.join(" · "))}` : ""}</div><ol class="plan">${result.plan.map((p) => `<li>${escape(p)}</li>`).join("")}</ol><details><summary>${t("constraints")}</summary><ul>${result.constraints.map((c) => `<li><strong>${escape(c.skillId)}</strong> · ${escape(c.text)}</li>`).join("")}${result.checks.map((c) => `<li>${escape(c)}</li>`).join("")}</ul></details>${result.growth?.allowed === false ? `<p class="growth-limit" role="status">${escape(result.growth.reason)}</p>` : ""}<div class="result-buttons"><button id="save" class="primary" ${saved ? "disabled" : ""}>${t(saved ? "saved" : "save")}</button><button id="grow" class="quiet" ${!saved || grown || result.growth?.allowed === false ? "disabled" : ""}>${t("grow")} ↗</button>${grown ? `<button id="download" class="quiet">${t("download")} ↓</button>` : ""}</div><div id="grow-picker" hidden></div>`;
 }
 function busy(value) {
   $("first").disabled = value;
@@ -301,6 +364,7 @@ function invalidate() {
   result = undefined;
   saved = false;
   grown = undefined;
+  growChoice = undefined;
   $("result").hidden = true;
   $("empty-result").hidden = false;
   contracts();
@@ -401,6 +465,7 @@ document.addEventListener("click", async (event) => {
     result = state.history.find((r) => r.id === button.dataset.open);
     saved = true;
     grown = undefined;
+    growChoice = undefined;
     renderResult();
     $("result").scrollIntoView({
       behavior: reduced.matches ? "instant" : "smooth",
@@ -433,6 +498,29 @@ document.addEventListener("click", async (event) => {
     saved &&
     result.growth?.allowed !== false
   ) {
+    growChoice = {
+      relationship: "derived_from_parents",
+      extend: "a",
+    };
+    renderGrowPicker();
+    button.scrollIntoView({ block: "nearest" });
+  }
+  if (button.dataset.growMode) {
+    growChoice = {
+      relationship: button.dataset.growMode,
+      extend: "a",
+    };
+    renderGrowPicker();
+  }
+  if (button.dataset.growExtend) {
+    growChoice.extend = button.dataset.growExtend;
+    renderGrowPicker();
+  }
+  if (button.id === "grow-cancel") {
+    growChoice = undefined;
+    renderGrowPicker();
+  }
+  if (button.id === "grow-confirm" && result && saved && growChoice) {
     button.disabled = true;
     const snapshot = result;
     try {
@@ -441,15 +529,40 @@ document.addEventListener("click", async (event) => {
           0,
           120,
         );
-      const data = await api("grow", { id: snapshot.id, name });
+      const lines = (id) =>
+        $(id)
+          .value.split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter(Boolean);
+      const data = await api("grow", {
+        id: snapshot.id,
+        name,
+        relationship: growChoice.relationship,
+        extend:
+          growChoice.relationship === "novel_extension"
+            ? growChoice.extend
+            : undefined,
+        draft:
+          growChoice.relationship === "independent_new_skill"
+            ? {
+                inputs: lines("grow-draft-inputs"),
+                outputs: lines("grow-draft-outputs"),
+                steps: lines("grow-draft-steps"),
+              }
+            : undefined,
+      });
       if (result === snapshot) {
         grown = data;
+        growChoice = undefined;
         renderResult();
       }
       await refreshAfterWrite("grown");
     } catch (error) {
       notify(error.message);
-      if (result === snapshot) button.disabled = false;
+      if (result === snapshot) {
+        button.disabled = false;
+        renderGrowPicker();
+      }
     }
   }
   if (button.id === "download" && grown) {
