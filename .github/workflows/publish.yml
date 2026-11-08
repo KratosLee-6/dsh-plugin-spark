@@ -1,0 +1,35 @@
+name: Publish
+
+# Publish to npm by pushing a version tag (v0.3.1) or by running this workflow
+# manually. Requires the repository secret NPM_TOKEN: an npm automation token
+# with publish rights for the dsh-plugin-spark package.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      # The local lockfile resolves through registry.npmmirror.com; CI fetches
+      # from npmjs because the mirror is unreliable from GitHub runners.
+      npm_config_registry: https://registry.npmjs.org/
+      npm_config_replace_registry_host: always
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - run: npm ci
+      - run: npm run check
+      - run: npm run verify:release
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
