@@ -35,7 +35,7 @@ npm run studio
 
 ### 接入 DeepSeek Harness
 
-兼容目标：**`@deepseek-ai/dsh@0.1.5-rc.2`**、**`@deepseek-ai/dsh-tools@0.1.5-rc.2`**、**`@deepseek-ai/cordis@4.0.2`**。DSH 仍处于开发者预览阶段，请锁定版本并在升级时回归。本项目是独立社区插件，不代表 DeepSeek 官方产品。
+兼容目标：**`@deepseek-ai/dsh@0.2.2-rc.1`**、**`@deepseek-ai/dsh-tools@0.2.2-rc.1`**、**`@deepseek-ai/cordis@4.1.0`**（2026-11-08 起；0.1.5-rc.2 为上一代兼容目标，保留于历史记录）。DSH 仍处于开发者预览阶段，请锁定版本并在升级时回归。本项目是独立社区插件，不代表 DeepSeek 官方产品。
 
 在已克隆并构建的项目目录运行：
 
@@ -46,7 +46,15 @@ npx --no-install dsh web --patch spark.patch.yml
 
 辅助命令写入本机插件和数据库的绝对路径，不覆盖已有 patch。移动目录后请重新生成。**不要提交生成的 patch**，其中包含本机路径。开发依赖已锁定 DSH CLI，因此上述命令不会悄悄下载另一个版本。
 
-如使用其他位置已安装的 DSH，请把生成的 patch 绝对路径交给其 `dsh web --patch` 命令，确保宿主满足锁定的 peer 版本。本版采用官方文档的本地 patch 加载方式，尚不宣称支持插件管理器一键安装，也未发布到 npm。
+如使用其他位置已安装的 DSH，请把生成的 patch 绝对路径交给其 `dsh web --patch` 命令，确保宿主满足锁定的 peer 版本。
+
+包内还声明了 bundle 清单，发到 npm 之后一条命令即可装进 profile：
+
+```sh
+dsh plugin --profile web add dsh-plugin-spark   # 或在「插件 → 发现」里一键安装
+```
+
+目前尚未发布到 npm；同样的链路现在可以用本地 tarball 走通——`npm pack` 后执行 `dsh plugin --profile web add ./dsh-plugin-spark-0.3.1.tgz`。安装会写入依赖、把包加入 `dsh.profile.bundles`，再由包内的 [`cordis.patch.yml`](cordis.patch.yml) 挂载插件。
 
 在已配置模型的 DSH 会话中试试：
 
@@ -92,7 +100,7 @@ npx --no-install dsh web --patch spark.patch.yml
 
 ## 数据与信任
 
-`--data-dir` 或插件 `dataDir` 指定本地 SQLite 目录，默认是启动进程工作目录下的 `.spark`。Studio 与 DSH 可指向同一目录；SQLite 负责串行提交，重复保存不会生成重复记录。请使用本地磁盘，不使用网络挂载数据库。备份前停止两者，再复制 `spark.db`；恢复时同样停止进程并使用空目录。数据库未加密。
+`--data-dir` 或插件 `dataDir` 指定本地 SQLite 目录。profile 以 bundle 方式挂载且未配置 `dataDir` 时，默认在 `$DSH_HOME/spark`，未设置 `DSH_HOME` 则用 `~/.dsh/spark`；Studio 的 `--data-dir` 默认仍是启动目录下的 `.spark`。Studio 与 DSH 可指向同一目录；SQLite 负责串行提交，重复保存不会生成重复记录。请使用本地磁盘，不使用网络挂载数据库。备份前停止两者，再复制 `spark.db`；恢复时同样停止进程并使用空目录。数据库未加密。
 
 Studio 仅监听 `127.0.0.1`，校验 Host/Origin，写操作使用进程级随机 token，静态文件使用白名单和限制性 CSP。这些措施防范浏览器来源攻击，不隔离同一用户下的其他本地进程。不要公开暴露端口。
 

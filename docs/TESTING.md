@@ -1,6 +1,16 @@
 # Test evidence / 测试证据
 
-Evidence date / 记录日期: 2026-11-07 (v0.3.0 growth relationships; v0.2.1 evidence retained below where still applicable). Version / 版本: 0.3.0.
+Evidence date / 记录日期: 2026-11-08 (host alignment to DSH 0.2.2-rc.1); v0.3.0 growth relationships and earlier evidence retained below where still applicable. Version / 版本: 0.3.0 + unreleased host alignment.
+
+## Host alignment / 宿主对齐 · 2026-11-08
+
+Local Windows verification on `@deepseek-ai/dsh@0.2.2-rc.1`, `@deepseek-ai/dsh-tools@0.2.2-rc.1` and `@deepseek-ai/cordis@4.1.0` (Node.js 24.15.0): 90/90 core+integration tests, `tsc --noEmit`, `verify:release` (26 archive entries), 12/12 browser tests through the Edge channel, and the pinned-host smoke (fresh isolated profile, absolute-path patch, four synthetic Skills, HTTP 200). The integration host now mounts `@deepseek-ai/dsh-tool-executor-native` and calls `tools.execute({ calls })`, because `ToolsService` no longer accepts `mode`. Production code needed no change.
+
+Bundle install path, verified end to end in an isolated `DSH_HOME`: `npm pack` (45 KB tarball containing `dist/`, `studio/`, `examples/` and `cordis.patch.yml`), then `dsh plugin --profile web add ./dsh-plugin-spark-0.3.1.tgz`. pnpm installs the package, the profile's `dsh.profile.bundles` gains `dsh-plugin-spark`, and the next `dsh web` boot mounts the plugin from the bundled patch, creates `$DSH_HOME/spark/spark.db` and seeds four Skills (HTTP 200). Not verified: installing from the public npm registry, because this release is not published there yet.
+
+本地以 DSH 0.2.2-rc.1 回归：90/90 核心+集成测试、类型检查、发布校验（26 个归档条目）、12/12 浏览器测试、锁定宿主冒烟（全新隔离 profile、绝对路径 patch、4 个合成技能、HTTP 200）全部通过。集成宿主改挂原生工具执行器并改用批量调用入口，因为新版不再接受 `mode`；生产代码未改动。
+
+bundle 安装链路已在隔离 `DSH_HOME` 下端到端验证：`npm pack`（45 KB tarball，含 `dist/`、`studio/`、`examples/` 与 `cordis.patch.yml`）→ `dsh plugin --profile web add ./dsh-plugin-spark-0.3.1.tgz`，pnpm 完成安装、profile 的 `dsh.profile.bundles` 自动加入 `dsh-plugin-spark`，随后 `dsh web` 启动即从包内 patch 挂载插件，在 `$DSH_HOME/spark/spark.db` 建库并播种 4 个技能（HTTP 200）。未验证：从公共 npm 源安装（本版尚未发布）。
 
 ## v0.3.0 additions / v0.3.0 补充
 

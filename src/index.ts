@@ -1,6 +1,7 @@
 import type { Context } from "@deepseek-ai/cordis";
 import { defineTool, type ToolDefinition } from "@deepseek-ai/dsh-tools";
-import { resolve } from "node:path";
+import { homedir } from "node:os";
+import { join, resolve } from "node:path";
 import {
   parseSkillJSON,
   skillMarkdown,
@@ -204,6 +205,16 @@ export function createTools(store: SparkStore): ToolDefinition[] {
   ];
 }
 
+/**
+ * Where a bundle install keeps its database when the profile sets no `dataDir`:
+ * the Harness home, not the host process working directory. `SPARK_DATA_DIR`
+ * overrides it for tests and odd deployments.
+ */
+export function defaultDataDir(): string {
+  if (process.env.SPARK_DATA_DIR) return process.env.SPARK_DATA_DIR;
+  return join(process.env.DSH_HOME ?? join(homedir(), ".dsh"), "spark");
+}
+
 export function apply(ctx: Context, config: Config = {}): void {
   if (
     config.dataDir !== undefined &&
@@ -216,7 +227,7 @@ export function apply(ctx: Context, config: Config = {}): void {
   )
     throw new Error("Spark seedExamples must be boolean");
   const store = new SparkStore(
-    resolve(config.dataDir ?? ".spark", "spark.db"),
+    resolve(config.dataDir ?? defaultDataDir(), "spark.db"),
     config.seedExamples === false ? [] : examples,
   );
   ctx.effect(() => () => store.close());

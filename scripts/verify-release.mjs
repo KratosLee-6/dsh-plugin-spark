@@ -13,11 +13,17 @@ const output = execFileSync(
 );
 const [pack] = JSON.parse(output);
 const allowed =
-  /^(dist\/|studio\/|examples\/|README(?:\.zh-CN)?\.md$|LICENSE$|REPOSITORY-SCOPE\.md$|THIRD_PARTY_NOTICES\.md$|package\.json$)/;
+  /^(dist\/|studio\/|examples\/|cordis\.patch\.yml$|README(?:\.zh-CN)?\.md$|LICENSE$|REPOSITORY-SCOPE\.md$|THIRD_PARTY_NOTICES\.md$|package\.json$)/;
 for (const file of pack.files) {
   assert(allowed.test(file.path), `Unexpected package file: ${file.path}`);
+  // `cordis.patch.yml` is the bundle manifest's patch and ships on purpose;
+  // locally generated `*.patch.yml` files carry absolute machine paths.
+  const bundlePatch = file.path === "cordis.patch.yml";
   assert(
-    !/\.(?:db|pem|log)$|(?:^|\/)\.env|\.patch\.yml/.test(file.path),
+    !(
+      /\.(?:db|pem|log)$|(?:^|\/)\.env/.test(file.path) ||
+      (!bundlePatch && /\.patch\.yml$/.test(file.path))
+    ),
     `Private file in archive: ${file.path}`,
   );
 }
@@ -27,6 +33,7 @@ for (const required of [
   "dist/core.js",
   "studio/index.html",
   "examples/skill.json",
+  "cordis.patch.yml",
   "README.zh-CN.md",
   "REPOSITORY-SCOPE.md",
   "LICENSE",
@@ -36,6 +43,11 @@ for (const required of [
     pack.files.some((f) => f.path === required),
     `Missing ${required}`,
   );
+// The bundle patch ships to every user, so it must not carry local paths.
+assert(
+  !/[A-Z]:[\\/]/.test(readFileSync("cordis.patch.yml", "utf8")),
+  "Local path in cordis.patch.yml",
+);
 const scan = (dir) =>
   readdirSync(dir, { withFileTypes: true }).flatMap((entry) =>
     entry.isDirectory() ? scan(join(dir, entry.name)) : [join(dir, entry.name)],

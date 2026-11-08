@@ -1,0 +1,6 @@
+# Spark bundle patch: applied when a profile installs this package as a bundle.
+# The plugin resolves its data directory from DSH_HOME and falls back to
+# ~/.dsh/spark, so no absolute path is baked in.
+- insert:
+    - id: spark
+      name: "dsh-plugin-spark"
