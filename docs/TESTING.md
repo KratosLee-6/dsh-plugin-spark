@@ -10,11 +10,15 @@ Bundle install path, verified end to end in an isolated `DSH_HOME`: `npm pack` (
 
 The same path was then verified against the public registry after publishing: `dsh plugin --profile web add dsh-plugin-spark` installs `0.3.1` from registry.npmjs.org (dist-tag `latest`, SLSA provenance attestation, sha512 matching the registry record), mounts it on boot and seeds four Skills.
 
+`0.3.2` was published through npm trusted publishing (OIDC): the GitHub Actions job exchanged its OIDC identity for a scoped token (`POST /-/npm/v1/oidc/token/exchange/package/dsh-plugin-spark` → 201) and published directly with a provenance attestation, with no long-lived npm token in the workflow.
+
 本地以 DSH 0.2.2-rc.1 回归：90/90 核心+集成测试、类型检查、发布校验（26 个归档条目）、12/12 浏览器测试、锁定宿主冒烟（全新隔离 profile、绝对路径 patch、4 个合成技能、HTTP 200）全部通过。集成宿主改挂原生工具执行器并改用批量调用入口，因为新版不再接受 `mode`；生产代码未改动。
 
 bundle 安装链路已在隔离 `DSH_HOME` 下端到端验证：`npm pack`（45 KB tarball，含 `dist/`、`studio/`、`examples/` 与 `cordis.patch.yml`）→ `dsh plugin --profile web add ./dsh-plugin-spark-0.3.1.tgz`，pnpm 完成安装、profile 的 `dsh.profile.bundles` 自动加入 `dsh-plugin-spark`，随后 `dsh web` 启动即从包内 patch 挂载插件，在 `$DSH_HOME/spark/spark.db` 建库并播种 4 个技能（HTTP 200）。
 
 发布后又以公共 npm 源复验同一链路：`dsh plugin --profile web add dsh-plugin-spark` 从 registry.npmjs.org 装到 `0.3.1`（`latest` 标签、SLSA provenance 证明、sha512 与 registry 记录一致），启动即挂载并播种 4 个技能。
+
+`0.3.2` 改走 npm trusted publishing（OIDC）发布：GitHub Actions 用 OIDC 身份换取作用域 token（`POST /-/npm/v1/oidc/token/exchange/package/dsh-plugin-spark` → 201），直接带 provenance 发布，工作流里不再有任何长期 npm token。
 
 ## v0.3.0 additions / v0.3.0 补充
 

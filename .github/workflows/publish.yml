@@ -39,4 +39,4 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm run verify:release
-      - run: npm publish --provenance --access public --loglevel verbose
+      - run: npm publish --provenance --access public
