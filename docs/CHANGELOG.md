@@ -1,5 +1,12 @@
 # Changes / 更新记录
 
+## 0.3.2 · 2026-11-08 · release pipeline / 发布链路
+
+- Install instructions now describe the published package instead of "not on npm yet"; this release refreshes the README shown on the npm page. / 安装说明改为已发布状态，本版同时刷新 npm 页面上的 README。
+- Publishing runs through npm trusted publishing (OIDC) from GitHub Actions: the publish job no longer uses a long-lived token. / 发布改走 npm trusted publishing（OIDC），发布任务不再使用长期 token。
+- Repository line endings are normalized to LF through `.gitattributes`, so `format:check` is stable on Windows checkouts. / 通过 `.gitattributes` 统一 LF 行尾，Windows 检出下 `format:check` 稳定。
+- No tool-contract or database-schema change. / 工具契约与数据库 schema 不变。
+
 ## 0.3.1 · 2026-11-08 · host alignment + bundle / 宿主对齐与 bundle
 
 - Move the compatibility target to `@deepseek-ai/dsh@0.2.2-rc.1`, `@deepseek-ai/dsh-tools@0.2.2-rc.1` and `@deepseek-ai/cordis@4.1.0`. / 兼容目标升级到 DSH 0.2.2-rc.1、工具包 0.2.2-rc.1、Cordis 4.1.0。

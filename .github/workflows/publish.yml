@@ -1,8 +1,9 @@
 name: Publish
 
-# Publish to npm by pushing a version tag (v0.3.1) or by running this workflow
-# manually. Requires the repository secret NPM_TOKEN: an npm automation token
-# with publish rights for the dsh-plugin-spark package.
+# Publish to npm by pushing a version tag (v0.3.2) or by running this workflow
+# manually. npm trusted publishing (OIDC) binds this workflow to the package on
+# npmjs.com, so no long-lived token is involved: the job exchanges its GitHub
+# OIDC identity for a short-lived publish credential.
 
 on:
   push:
@@ -27,9 +28,8 @@ jobs:
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
+      - run: npm install -g npm@12
       - run: npm ci
       - run: npm run check
       - run: npm run verify:release
       - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
