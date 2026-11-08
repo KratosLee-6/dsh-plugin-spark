@@ -24,11 +24,18 @@ jobs:
       npm_config_replace_registry_host: always
     steps:
       - uses: actions/checkout@v4
+      # No `registry-url` here on purpose: it writes an `_authToken=${NODE_AUTH_TOKEN}`
+      # line into .npmrc, and with the token absent npm authenticates with an empty
+      # token instead of exchanging the GitHub OIDC identity for a trusted-publish one.
       - uses: actions/setup-node@v4
         with:
           node-version: 24
-          registry-url: https://registry.npmjs.org
       - run: npm install -g npm@12
+      - name: Show auth mode (no secret values)
+        run: |
+          echo "registry=$(npm config get registry)"
+          echo "auth token configured: $(npm config get '//registry.npmjs.org/:_authToken' >/dev/null 2>&1 && echo yes || echo no)"
+          if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then echo "OIDC request URL: present"; else echo "OIDC request URL: MISSING"; fi
       - run: npm ci
       - run: npm run check
       - run: npm run verify:release
