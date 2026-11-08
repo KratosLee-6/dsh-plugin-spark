@@ -48,13 +48,13 @@ npx --no-install dsh web --patch spark.patch.yml
 
 如使用其他位置已安装的 DSH，请把生成的 patch 绝对路径交给其 `dsh web --patch` 命令，确保宿主满足锁定的 peer 版本。
 
-包内还声明了 bundle 清单，发到 npm 之后一条命令即可装进 profile：
+包内还声明了 bundle 清单，一条命令即可装进 profile：
 
 ```sh
 dsh plugin --profile web add dsh-plugin-spark   # 或在「插件 → 发现」里一键安装
 ```
 
-目前尚未发布到 npm；同样的链路现在可以用本地 tarball 走通——`npm pack` 后执行 `dsh plugin --profile web add ./dsh-plugin-spark-0.3.1.tgz`。安装会写入依赖、把包加入 `dsh.profile.bundles`，再由包内的 [`cordis.patch.yml`](cordis.patch.yml) 挂载插件。
+已发布为 [`dsh-plugin-spark@0.3.1`](https://www.npmjs.com/package/dsh-plugin-spark)，带 GitHub Actions 的 SLSA provenance 证明。安装会写入依赖、把包加入 `dsh.profile.bundles`，再由包内的 [`cordis.patch.yml`](cordis.patch.yml) 挂载插件，首次启动在 `$DSH_HOME/spark/spark.db` 建库。若你的 npm 指向镜像（如 npmmirror）且尚未同步，追加 `--registry=https://registry.npmjs.org` 即可。
 
 在已配置模型的 DSH 会话中试试：
 
