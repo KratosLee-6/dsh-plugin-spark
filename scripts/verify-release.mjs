@@ -11,7 +11,10 @@ const output = execFileSync(
   [npmCli, "pack", "--dry-run", "--json", "--ignore-scripts"],
   { encoding: "utf8" },
 );
-const [pack] = JSON.parse(output);
+// npm 11 reports an array of packs; npm 12 reports an object keyed by name.
+const parsed = JSON.parse(output);
+const pack = Array.isArray(parsed) ? parsed[0] : Object.values(parsed)[0];
+assert(pack?.files, "npm pack --json did not report a file list");
 const allowed =
   /^(dist\/|studio\/|examples\/|cordis\.patch\.yml$|README(?:\.zh-CN)?\.md$|LICENSE$|REPOSITORY-SCOPE\.md$|THIRD_PARTY_NOTICES\.md$|package\.json$)/;
 for (const file of pack.files) {
