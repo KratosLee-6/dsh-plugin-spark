@@ -16,6 +16,11 @@ Try [the intentionally incomplete example](../examples/reviewable-skill.md). It 
 
 示例故意不声明输入和输出；Spark 不会替你猜测。可用 `evidence-brief` 作为输入、`action-plan` 作为输出，以 Research Synthesis 作为 A 验证一组声明层面的连接。
 
+To see a grown draft, import [the relationship example](../examples/grown-relationship.md): it is the exact SKILL.md export of a synthetic `novel_extension` grow, including the `spark-relationship` frontmatter and the Relationship section. Importing it back reproduces the relationship; it remains an unverified draft.
+
+想看已生长的草案，可导入[关系示例](../examples/grown-relationship.md)：它是一个合成 `novel_extension` 生长的真实 SKILL.md 导出，含 `spark-relationship` frontmatter 与 Relationship 分节；重新导入可还原关系，仍属未验证草案。
+
+
 ## Supported subset / 支持的子集
 
 | Source / 原文                                                     | Mapping / 映射                                      |

@@ -1,5 +1,12 @@
 # Changes / 更新记录
 
+## 0.3.3 · 2026-11-09 · docs and examples / 文档与示例
+
+- The import guide links a synthetic `novel_extension` example (`examples/grown-relationship.md`): a real SKILL.md export shape with `spark-relationship` frontmatter and a Relationship section, re-importable with the relationship intact. / 导入指南新增合成 `novel_extension` 示例（`examples/grown-relationship.md`）：真实 SKILL.md 导出形态，含 `spark-relationship` frontmatter 与 Relationship 分节，重导入可还原关系。
+- The roadmap checkpoint and measured-results table now reflect the 0.3.2 state: 90/90 core and integration tests, 12 browser tests, pinned-host smoke on DSH 0.2.2-rc.1 and the npm trusted-publishing release. / 路线图节点与实测结果表刷新到 0.3.2 状态：90/90 核心与集成测试、12 项浏览器测试、DSH 0.2.2-rc.1 锁定宿主冒烟与 npm trusted publishing 发布。
+- The npm-audit row is refreshed honestly: runtime dependencies scan clean; the dev dependency tree reports advisories inside the pinned `@deepseek-ai/dsh` host-SDK chain. / npm audit 行如实刷新：运行时依赖干净；开发依赖树的公告位于锁定的 `@deepseek-ai/dsh` 宿主 SDK 依赖链。
+- No tool-contract or database-schema change; no dependency change. / 工具契约与数据库 schema 不变；依赖不变。
+
 ## 0.3.2 · 2026-11-08 · release pipeline / 发布链路
 
 - Install instructions now describe the published package instead of "not on npm yet"; this release refreshes the README shown on the npm page. / 安装说明改为已发布状态，本版同时刷新 npm 页面上的 README。

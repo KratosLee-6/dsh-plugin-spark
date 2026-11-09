@@ -26,6 +26,6 @@ Optional model suggestions must be opt-in, disclose provider/data boundaries and
 
 ## Current checkpoint / 当前节点
 
-v0.3.0 is the current plugin checkpoint: 90 core/integration tests pass locally; browser regression counts are refreshed in [test evidence](TESTING.md). These results cover the plugin only, not the standalone application. The next feature milestone is explicit contract adapters; backup/restore and host experience remain undelivered.
+v0.3.2 is the current plugin checkpoint: 90/90 core/integration tests, typecheck, release verification and a pinned-host smoke (DSH 0.2.2-rc.1, `dsh.bundle` install) pass locally, and the plugin is published to npm through trusted publishing; browser regression counts are refreshed in [test evidence](TESTING.md). These results cover the plugin only, not the standalone application. The next feature milestone is explicit contract adapters; backup/restore and host experience remain undelivered.
 
-当前插件节点为 v0.3.0：90 项核心/集成测试本地通过，浏览器回归读数见测试证据页；该结果只覆盖插件，不代表主 App 验收。下一功能节点是显式契约适配；备份恢复与宿主体验尚未交付。
+当前插件节点为 v0.3.2：90/90 项核心/集成测试、类型检查、发布校验与锁定宿主冒烟（DSH 0.2.2-rc.1、`dsh.bundle` 一键安装）本地通过，插件已通过 trusted publishing 发布到 npm；浏览器回归读数见测试证据页。该结果只覆盖插件，不代表主 App 验收。下一功能节点是显式契约适配；备份恢复与宿主体验尚未交付。

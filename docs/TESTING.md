@@ -61,15 +61,15 @@ npm run test:ui
 | Check / 检查                      | Result / 结果                                                    | Scope / 范围                                                                                       |
 | --------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | TypeScript                        | Passed / 通过                                                    | Static types and build / 静态类型与构建                                                            |
-| Core and integration / 核心与集成 | 80 tests, 5 files / 80 项、5 个文件                              | Contracts, composition, persistence, plugin lifecycle, HTTP / 契约、组合、存储、插件生命周期、HTTP |
-| Browser / 浏览器                  | 11 tests / 11 项                                                   | Desktop and 390px layouts, bilingual flows / 桌面、390px、双语流程                                 |
+| Core and integration / 核心与集成 | 90 tests, 5 files / 90 项、5 个文件                              | Contracts, composition, persistence, plugin lifecycle, HTTP / 契约、组合、存储、插件生命周期、HTTP |
+| Browser / 浏览器                  | 12 tests / 12 项                                                   | Desktop and 390px layouts, bilingual flows, grow relationships / 桌面、390px、双语流程、生长关系 |
 | Accessibility / 无障碍            | No violations in tested axe WCAG A/AA scans / 已测页面未发现违规 | Automated scan only / 仅自动扫描                                                                   |
 | DSH host / 宿主                   | Passed / 通过                                                    | Fresh isolated profile, patch load, 4 examples, HTTP 200 / 隔离配置、加载插件、4 个示例、页面响应  |
-| npm audit                         | 0 on 2026-09-18 / 9 月 18 日为 0                                 | v0.1 audit baseline; no dependencies changed / v0.1 审计基线，未变更依赖                           |
+| npm audit                         | Runtime dependencies 0 on 2026-11-09; dev dependency tree reports 214 (11 moderate, 203 high), all inside the pinned `@deepseek-ai/dsh` host-SDK chain / 运行时依赖 2026-11-09 为 0；开发依赖树报告 214（11 中、203 高），全部位于锁定的 `@deepseek-ai/dsh` 宿主 SDK 依赖链 | Clean with `npm audit --omit=dev`; dev-chain advisories belong to the pinned host SDK and are not fixable here without breaking host alignment / `npm audit --omit=dev` 为 0；开发链公告属于锁定的宿主 SDK，本插件无法在不破坏宿主对齐的前提下修复 |
 
-Coverage for src/core.ts, src/store.ts, src/index.ts, src/server.ts and src/markdown.ts: **97.98% statements, 97.18% branches, 93.44% functions, 98.15% lines**. CLI, examples and Studio JavaScript are outside this coverage denominator; CLI and UI have separate smoke/browser checks.
+Coverage for src/core.ts, src/store.ts, src/index.ts, src/server.ts and src/markdown.ts: **96.69% statements, 89.57% branches, 98.46% functions, 97% lines** (refreshed for v0.3.0 relationship code). CLI, examples and Studio JavaScript are outside this coverage denominator; CLI and UI have separate smoke/browser checks.
 
-覆盖率统计仅包含上述五个核心文件：语句 97.98%、分支 97.18%、函数 93.44%、行 98.15%。CLI、示例和 Studio JavaScript 不在分母内，另有冒烟与浏览器验证。高覆盖率不等于没有缺陷。
+覆盖率统计仅包含上述五个核心文件：语句 96.69%、分支 89.57%、函数 98.46%、行 97%（随 v0.3.0 关系代码刷新）。CLI、示例和 Studio JavaScript 不在分母内，另有冒烟与浏览器验证。高覆盖率不等于没有缺陷。
 
 Browser assertions cover collision, save, growth, SKILL.md download, history after reload, cancellation, reduced motion, missing inputs, malicious HTML treated as text, and truthful save-failure feedback. Tests generate the committed [English screenshot](screenshots/studio-en.png), [Chinese screenshot](screenshots/collision-zh.png) and [mobile-width screenshot](screenshots/mobile-en.png) using synthetic examples.
 
@@ -83,7 +83,7 @@ The release verifier checks the npm archive allowlist and local documentation li
 
 - The host smoke test proves startup and plugin initialization; it makes no model request and does not prove an agent can complete a conversation. / 宿主冒烟证明启动与初始化，不请求模型，也不证明 Agent 对话流程。
 - No iOS/Android native packages, macOS runtime, Safari, Firefox or physical mobile devices were validated locally. A 390px browser viewport is a responsive-layout check. / 未本地验证原生移动包、macOS、Safari、Firefox 或手机真机；390px 只是响应式布局检查。
-- No local-model inference path, npm publication or official DSH listing is claimed. / 未验证本地模型推理、npm 正式发布，也不宣称获 DSH 官方收录。
+- No local-model inference path or official DSH listing is claimed. npm publication through trusted publishing is verified from 0.3.1 onward; inclusion in any official DSH plugin listing is not. / 未验证本地模型推理，也不宣称获 DSH 官方收录；0.3.1 起的 npm trusted publishing 发布已验证，官方插件目录收录未验证。
 - Automated accessibility scans do not replace keyboard, screen-reader or human usability review. No cross-device frame-rate or latency benchmark is claimed. / 自动无障碍扫描不替代键盘、读屏和人工可用性评审；尚无跨设备帧率或延迟基准。
 - Contract-name matching is deterministic. Generated Skills remain unverified drafts; semantic compatibility, execution success and learning quality are not measured. / 契约名称匹配是确定性规则；生长结果仍为未验证草案，未测量语义兼容、执行成功或学习效果。
 - DSH is a developer preview. Retest pinned interfaces before upgrading. / DSH 处于开发者预览，升级前需要重新验证接口。
