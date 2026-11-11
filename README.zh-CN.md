@@ -54,7 +54,7 @@ npx --no-install dsh web --patch spark.patch.yml
 dsh plugin --profile web add dsh-plugin-spark   # 或在「插件 → 发现」里一键安装
 ```
 
-已发布到 npm：[`dsh-plugin-spark`](https://www.npmjs.com/package/dsh-plugin-spark)，带 GitHub Actions 的 SLSA provenance 证明。安装会写入依赖、把包加入 `dsh.profile.bundles`，再由包内的 [`cordis.patch.yml`](cordis.patch.yml) 挂载插件，首次启动在 `$DSH_HOME/spark/spark.db` 建库。若你的 npm 指向镜像（如 npmmirror）且尚未同步，追加 `--registry=https://registry.npmjs.org` 即可。
+已发布到 npm：[`dsh-plugin-spark`](https://www.npmjs.com/package/dsh-plugin-spark)，带 GitHub Actions 的 SLSA provenance 证明。安装会写入依赖、把包加入 `dsh.profile.bundles`，再由包内的 [`cordis.patch.yml`](cordis.patch.yml) 挂载插件，首次启动在 `$DSH_HOME/spark/spark.db` 建库。若你的 npm 指向镜像（如 npmmirror）且尚未同步，追加 `--registry=https://registry.npmjs.org` 即可。也可以直接从 Git 安装：`dsh plugin --profile web add github:KratosLee-6/dsh-plugin-spark`——`prepare` 脚本会在安装时构建 `dist/`。pnpm 11 默认拦截构建脚本，安装器会打印需要加进 profile `pnpm-workspace.yaml` 的 `allowBuilds` 条目，批准后重跑即可。
 
 在已配置模型的 DSH 会话中试试：
 

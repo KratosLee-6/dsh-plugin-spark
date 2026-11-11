@@ -1,5 +1,11 @@
 # Changes / 更新记录
 
+## 0.3.4 · 2026-11-11 · install from Git source / 源码安装
+
+- `prepare` builds `dist/` at install time, so a Git dependency (`dsh plugin --profile web add github:KratosLee-6/dsh-plugin-spark`) produces the same bundle as the npm package instead of unbuilt source. pnpm 11 blocks build scripts by default, so the installer prints the exact `allowBuilds` key to approve. The gap was reported by the awesome-dsh-plugin maintainer on the listing PR: `dist/` is gitignored and only `prepack` built it. / 新增 `prepare` 在安装时构建 `dist/`：Git 依赖安装得到与 npm 包一致的 bundle，而不是未构建源码；pnpm 11 默认拦截构建脚本，安装器会打印需要批准的 `allowBuilds` 条目。该缺口由 awesome-dsh-plugin 维护者在收录 PR 上指出。
+- Verified in a fresh clone: `npm ci` produces `dist/index.js`, and `npm pack` still yields the same 27 files. Tests, typecheck and release verification unchanged. / 全新克隆验证：`npm ci` 会产出 `dist/index.js`，`npm pack` 仍是 27 个文件；测试、类型检查与发布校验不变。
+- No tool-contract or database-schema change. / 工具契约与数据库 schema 不变。
+
 ## 0.3.3 · 2026-11-09 · docs and examples / 文档与示例
 
 - The import guide links a synthetic `novel_extension` example (`examples/grown-relationship.md`): a real SKILL.md export shape with `spark-relationship` frontmatter and a Relationship section, re-importable with the relationship intact. / 导入指南新增合成 `novel_extension` 示例（`examples/grown-relationship.md`）：真实 SKILL.md 导出形态，含 `spark-relationship` frontmatter 与 Relationship 分节，重导入可还原关系。

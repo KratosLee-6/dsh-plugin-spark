@@ -1,6 +1,6 @@
 {
   "name": "dsh-plugin-spark",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Let skills meet, collide, and grow. Local-first skill composition for DeepSeek Harness.",
   "type": "module",
   "license": "MIT",
@@ -66,6 +66,7 @@
     "test:ui": "playwright test",
     "studio": "node dist/cli.js studio",
     "check": "npm run typecheck && npm run test:coverage && npm run build",
+    "prepare": "npm run build",
     "prepack": "npm run build",
     "verify:release": "node scripts/verify-release.mjs",
     "test:host": "node scripts/host-smoke.mjs",
