@@ -78,7 +78,7 @@ dsh plugin --profile web add dsh-plugin-spark   # 或在「插件 → 发现」�
 | `spark_search`         | 搜索名称、描述、标签和输入/输出声明            | 否              |
 | `spark_inspect`        | 读取技能详情、约束与来源                       | 否              |
 | `spark_import`         | 校验并导入一份结构化技能 JSON                  | 用户要求导入时  |
-| `spark_collide`        | A → B 规则组合，给出交接点、缺口、步骤和检查项 | 仅 `save: true` |
+| `spark_collide`        | A → B 规则组合，给出交接点、缺口、步骤和检查项；可附作者批准的契约桥闭合名称未匹配的缺口 | 仅 `save: true` |
 | `spark_grow`           | 将已保存碰撞生长为可复用草案，须显式选择来源关系——`derived_from_parents`（默认）、`novel_extension`（`extend: "a"\|"b"` 延伸一侧）或 `independent_new_skill`（作者自备草案）；返回 SKILL.md | 仅按请求写入        |
 | `spark_history`        | 查看最近最多 100 次保存的碰撞与来源快照        | 否              |
 

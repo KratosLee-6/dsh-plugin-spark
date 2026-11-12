@@ -19,9 +19,9 @@ flowchart LR
 
 `Skill` 声明编号、名称、描述、输入、输出、步骤、约束、标签及父级。导入可省略父级。编号仅允许小写英文字母、数字、连字符，最长 80 字符；数组最多 32 项，每项最长 500 字符；输入、输出、步骤不能为空。JSON 最多 64 KB；名称 120 字符，描述 2,000 字符，目标 1,000 字符。运行时会校验数据，不依赖静态类型兜底。
 
-Composition is directional: A's outputs are normalized and matched to B's required inputs. A result is `connected` only when every B input matches; otherwise it is `bridge-needed`. These labels refer only to declarations, not executable interoperability. No network, model, shell or Skill execution occurs inside the engine.
+Composition is directional: A's outputs are normalized and matched to B's required inputs. A result is `connected` only when every B input matches; otherwise it is `bridge-needed`. A human may close a gap with an approved bridge: an explicit mapping of one A output to one unmatched B input, carrying the author's note. Bridges are validated declarations — mismatched endpoints are rejected, never guessed — and they change the collision fingerprint; they do not verify interoperability. These labels refer only to declarations, not executable interoperability. No network, model, shell or Skill execution occurs inside the engine.
 
-组合有方向：A 的输出经过规范化，与 B 的必需输入匹配。只有所有输入都匹配才标为 `connected`，否则为 `bridge-needed`。状态仅描述声明层面的匹配，不代表实际可执行兼容性。引擎不请求网络、不调用模型或 shell，也不执行 Skill。
+组合有方向：A 的输出经过规范化，与 B 的必需输入匹配。只有所有输入都匹配才标为 `connected`，否则为 `bridge-needed`。缺口可由人工批准的桥闭合：把 A 的某个输出显式映射到一条未匹配的 B 输入，并附作者理由。桥是被校验的声明——端点不符即拒绝、绝不猜测——且会改变碰撞指纹；桥不代表验证了互操作。状态仅描述声明层面的匹配，不代表实际可执行兼容性。引擎不请求网络、不调用模型或 shell，也不执行 Skill。
 
 ## Persistence and growth / 持久化与生长
 

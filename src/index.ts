@@ -95,13 +95,18 @@ export function createTools(store: SparkStore): ToolDefinition[] {
     defineTool({
       name: "spark_collide",
       description:
-        "Compose two Skill contracts A → B into a deterministic, UNVERIFIED draft. Match declared names only; report missing inputs and preserve constraints. save defaults false; set true only when the user requests saving. 双技能规则碰撞；不执行技能。",
+        "Compose two Skill contracts A → B into a deterministic, UNVERIFIED draft. Match declared names only; report missing inputs and preserve constraints. bridges are author-approved mappings of an A output to a B input the name match missed; each needs the human's note and is a declaration, not a verified conversion. save defaults false; set true only when the user requests saving. 双技能规则碰撞；桥接需作者批准；不执行技能。",
       parameters: {
         first: str,
         second: str,
         goal: str,
         language,
         save: { type: "boolean" },
+        bridges: {
+          type: "json",
+          description:
+            "Optional author-approved bridges: [{fromOutput, toInput, note}]. fromOutput must be a declared A output; toInput a declared B input unmatched by name; note records why the human approved it. / 作者批准的契约桥数组",
+        },
       },
       output,
       async execute(args, exec) {
@@ -113,6 +118,7 @@ export function createTools(store: SparkStore): ToolDefinition[] {
                 args.second,
                 args.goal,
                 args.language ?? "en",
+                args.bridges,
               )
             : {
                 collision: store.preview(
@@ -120,6 +126,7 @@ export function createTools(store: SparkStore): ToolDefinition[] {
                   args.second,
                   args.goal,
                   args.language ?? "en",
+                  args.bridges,
                 ),
                 saved: false,
               },

@@ -116,6 +116,7 @@ export function createStudio(store: SparkStore) {
           text(b.second, "second", 80),
           text(b.goal, "goal", 1000),
           language(b.language),
+          b.bridges,
         ] as const;
         reply(
           200,

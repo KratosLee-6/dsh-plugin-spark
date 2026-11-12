@@ -46,6 +46,16 @@ export interface GrowthAssessment {
   allowed: boolean;
   reason: string | null;
 }
+/**
+ * Author-approved contract bridge: A's declared output feeds B's declared input
+ * under different names. The note records WHY the human approved the mapping;
+ * the engine never invents one. Bridges are declarations, not verified conversions.
+ */
+export interface Bridge {
+  fromOutput: string;
+  toInput: string;
+  note: string;
+}
 export interface Collision {
   growth?: GrowthAssessment;
   id: string;
@@ -57,6 +67,8 @@ export interface Collision {
   parents: [Skill, Skill];
   fingerprint: string;
   handoffs: string[];
+  /** Author-approved bridges from this collision; absent on pre-0.4.0 records. */
+  bridges?: Bridge[];
   gaps: string[];
   constraints: { skillId: string; text: string }[];
   plan: string[];
@@ -165,12 +177,75 @@ export function parseSkillJSON(source: string): Skill {
 const token = (s: string) =>
   s.normalize("NFKC").trim().toLocaleLowerCase("en-US");
 
+/**
+ * Validate author-supplied bridges against the two contracts. Mismatches fail
+ * visibly: every fromOutput must be a declared output of A, every toInput a
+ * declared input of B that exact-name matching did NOT already cover.
+ */
+function bridges(
+  raw: unknown,
+  a: Skill,
+  b: Skill,
+  handoffs: string[],
+): Bridge[] {
+  if (raw === undefined || raw === null) return [];
+  if (!Array.isArray(raw) || raw.length > 32)
+    throw new SparkError(
+      "INVALID_BRIDGE",
+      "Bridges must be an array of at most 32 items / 桥接为数组，最多 32 条",
+    );
+  const seen = new Set<string>();
+  const field = (value: unknown, name: string) => {
+    try {
+      return text(value, name, 500);
+    } catch (error) {
+      // Field-level problems still report as bridge errors: the caller passed
+      // a bridge, and "INVALID_INPUT" would hide which feature failed.
+      if (error instanceof SparkError && error.code === "INVALID_INPUT")
+        throw new SparkError(
+          "INVALID_BRIDGE",
+          `Bridge ${name}: expected 1–500 characters / 桥接字段为空或超长`,
+        );
+      throw error;
+    }
+  };
+  return raw.map((value) => {
+    const bridge = object(value);
+    const fromOutput = field(bridge.fromOutput, "fromOutput");
+    const toInput = field(bridge.toInput, "toInput");
+    const note = field(bridge.note, "note");
+    if (!a.outputs.includes(fromOutput))
+      throw new SparkError(
+        "INVALID_BRIDGE",
+        `Bridge output "${fromOutput}" is not declared by A / 桥接来源不在 A 的输出清单中`,
+      );
+    if (!b.inputs.includes(toInput))
+      throw new SparkError(
+        "INVALID_BRIDGE",
+        `Bridge input "${toInput}" is not declared by B / 桥接目标不在 B 的输入清单中`,
+      );
+    if (handoffs.includes(toInput))
+      throw new SparkError(
+        "INVALID_BRIDGE",
+        `Bridge input "${toInput}" already matches by name; a bridge is redundant / 该输入已按名称匹配，无需桥接`,
+      );
+    if (seen.has(toInput))
+      throw new SparkError(
+        "INVALID_BRIDGE",
+        `Duplicate bridge for input "${toInput}" / 同一输入重复桥接`,
+      );
+    seen.add(toInput);
+    return { fromOutput, toInput, note };
+  });
+}
+
 /** Compose declared contracts. Never executes Skill instructions or claims semantic compatibility. */
 export function collide(
   first: Skill,
   second: Skill,
   rawGoal: string,
   language: Language = "en",
+  rawBridges?: unknown,
 ): Collision {
   const a = validateSkill(first),
     b = validateSkill(second);
@@ -185,10 +260,30 @@ export function collide(
   const handoffs = b.inputs.filter((input) =>
     a.outputs.some((output) => token(output) === token(input)),
   );
-  const gaps = b.inputs.filter((input) => !handoffs.includes(input));
-  const fingerprint = digest({ engine: "spark-rules/1", a, b, goal, language });
+  const approved = bridges(rawBridges, a, b, handoffs).sort((x, y) =>
+    x.toInput < y.toInput ? -1 : x.toInput > y.toInput ? 1 : 0,
+  );
+  const bridged = approved.map((bridge) => bridge.toInput);
+  const gaps = b.inputs.filter(
+    (input) => !handoffs.includes(input) && !bridged.includes(input),
+  );
+  // Bridges join the fingerprint only when present, so bridge-free collisions
+  // keep the IDs they had before 0.4.0 and old saved history stays matched.
+  const fingerprint = digest({
+    engine: "spark-rules/1",
+    a,
+    b,
+    goal,
+    language,
+    ...(approved.length ? { bridges: approved } : {}),
+  });
   const connected = gaps.length === 0;
   const zh = language === "zh";
+  const bridgeLine = approved.length
+    ? zh
+      ? `以下契约桥由作者批准（仅声明，未经执行验证）：${approved.map((x) => `${x.fromOutput} → ${x.toInput}（${x.note}）`).join("；")}。`
+      : `Author-approved contract bridges (declarations, not verified conversions): ${approved.map((x) => `${x.fromOutput} -> ${x.toInput} (${x.note})`).join("; ")}.`
+    : null;
   const collision: Collision = {
     growth: { allowed: true, reason: null },
     id: `spark-${fingerprint.slice(0, 24)}`,
@@ -200,6 +295,7 @@ export function collide(
     parents: [a, b],
     fingerprint,
     handoffs,
+    bridges: approved,
     gaps,
     constraints: [a, b].flatMap((s) =>
       s.constraints.map((c) => ({ skillId: s.id, text: c })),
@@ -211,6 +307,7 @@ export function collide(
           gaps.length
             ? `先补充或转换缺失输入：${gaps.join("、")}，再交给 ${b.name}；未验证前不要自动执行。`
             : `检查交接内容 ${handoffs.join("、")}，再交给 ${b.name}。`,
+          ...(bridgeLine ? [bridgeLine] : []),
           `依照 ${b.name} 的步骤生成 ${b.outputs.join("、")}，用下列检查项人工验收。`,
         ]
       : [
@@ -219,6 +316,7 @@ export function collide(
           gaps.length
             ? `Supply or transform the missing inputs: ${gaps.join(", ")} before ${b.name}. Do not execute an unverified bridge.`
             : `Inspect the handoff (${handoffs.join(", ")}) before passing it to ${b.name}.`,
+          ...(bridgeLine ? [bridgeLine] : []),
           `Follow ${b.name} to produce ${b.outputs.join(", ")} and review the checks below.`,
         ],
     checks: zh

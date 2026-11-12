@@ -1,5 +1,14 @@
 # Changes / 更新记录
 
+## 0.4.0 · 2026-11-10 · contract adapters / 契约适配
+
+- `spark_collide` accepts optional author-approved **bridges**: an explicit mapping of one declared A output to one B input the name match missed, each carrying the human's note on why the mapping holds. A bridged collision reports `connected` only when every remaining input is covered; bridges are disclosed in the plan and in the result. / `spark_collide` 新增可选的作者批准**契约桥**：把 A 的某个声明输出显式映射到名称匹配漏掉的 B 输入，每条必附作者理由；仅当其余输入也全部有着落时才报 `connected`，桥在方案与结果中明示。
+- Mismatches fail visibly with `INVALID_BRIDGE`: unknown endpoints, inputs already matched by name, duplicate targets, and missing or blank notes are all rejected — the engine never guesses a conversion. / 不匹配即明确失败：未知端点、名称已匹配的输入、重复目标、缺失或空白理由一律 `INVALID_BRIDGE` 拒绝——引擎绝不猜测转换。
+- Bridges change the collision fingerprint (and therefore its ID), persist with the saved collision, and reappear from history; bridge-free collisions keep their pre-0.4.0 IDs, so existing saved history stays matched. / 桥会改变碰撞指纹（进而改变 ID），随碰撞保存并在历史中还原；无桥碰撞保持 0.4.0 之前的 ID，既有保存历史不失效。
+- Studio shows a bridge editor whenever gaps remain: pick an A output per missing input, write the approval note, re-collide. Saving a bridged collision stores the bridges. / Studio 在存在缺口时显示桥接编辑器：为每个缺失输入选 A 输出、写批准理由、重新碰撞；保存时桥一并入库。
+- A bridge is a declaration, not a verified conversion: the disclaimer, checks and growth limits are unchanged, and no Skill is executed. / 桥是声明而非经验证的转换：免责声明、检查项与生长容量限制不变，不执行任何 Skill。
+- No database-schema or host-contract change. 94/94 core and integration tests, 13 browser tests, typecheck, release verification and the pinned-host smoke pass locally. / 数据库 schema 与宿主契约不变。本地通过 94/94 核心与集成测试、13 项浏览器测试、类型检查、发布校验与锁定宿主冒烟。
+
 ## 0.3.3 · 2026-11-09 · docs and examples / 文档与示例
 
 - The import guide links a synthetic `novel_extension` example (`examples/grown-relationship.md`): a real SKILL.md export shape with `spark-relationship` frontmatter and a Relationship section, re-importable with the relationship intact. / 导入指南新增合成 `novel_extension` 示例（`examples/grown-relationship.md`）：真实 SKILL.md 导出形态，含 `spark-relationship` frontmatter 与 Relationship 分节，重导入可还原关系。

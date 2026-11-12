@@ -73,6 +73,13 @@ const copy = {
     gap: "A bridge is needed",
     handoff: "Handoff",
     missing: "Missing inputs",
+    bridgeApproved: "Approved bridges",
+    bridgeIntro:
+      "Map a missing input to a declared A output. You approve each mapping with a note; it stays a declaration, never a verified conversion.",
+    bridgeNote: "Why this mapping holds",
+    bridgePick: "Pick an A output…",
+    bridgeApply: "Re-collide with approved bridges",
+    bridgeNeedNote: "Give every chosen bridge a note before applying.",
     none: "No matching contract",
     constraints: "Source constraints & review checks",
     save: "Save this spark",
@@ -165,6 +172,13 @@ const copy = {
     gap: "还需要一座桥",
     handoff: "交接点",
     missing: "待补输入",
+    bridgeApproved: "已批准的桥",
+    bridgeIntro:
+      "把缺失输入映射到 A 的某个声明输出。每条映射由你附理由批准；它始终只是声明，不是经验证的转换。",
+    bridgeNote: "这条映射为何成立",
+    bridgePick: "选择 A 的输出…",
+    bridgeApply: "带批准的桥重新碰撞",
+    bridgeNeedNote: "应用前请为每条选中的桥填写批准理由。",
     none: "暂无匹配契约",
     constraints: "来源约束与验收检查",
     save: "保存这个闪光",
@@ -202,6 +216,7 @@ let lang = "en",
   saved = false,
   grown,
   growChoice,
+  approvedBridges = [],
   controller,
   toastTimer;
 const t = (key) => copy[lang][key];
@@ -340,8 +355,15 @@ function renderResult() {
   if (!result) return;
   $("empty-result").hidden = true;
   $("result").hidden = false;
+  const approved = result.bridges ?? [];
+  const bridgeRows = result.gaps
+    .map(
+      (gap) =>
+        `<div class="bridge-row"><span class="bridge-gap">${escape(gap)}</span><select data-bridge="${escape(gap)}" aria-label="${escape(gap)}"><option value="">${escape(t("bridgePick"))}</option>${result.parents[0].outputs.map((o) => `<option value="${escape(o)}">${escape(o)}</option>`).join("")}</select><input data-bridge-note="${escape(gap)}" maxlength="500" placeholder="${escape(t("bridgeNote"))}" aria-label="${escape(t("bridgeNote"))}"></div>`,
+    )
+    .join("");
   $("result").innerHTML =
-    `<div class="result-header"><h3 id="result-title">${escape(result.title)}</h3><span class="match ${result.gaps.length ? "gap" : ""}">${t(result.gaps.length ? "gap" : "ready")}</span></div><p class="disclaimer">${escape(result.disclaimer)}</p><div class="handoff"><strong>${t("handoff")}</strong> · ${escape(result.handoffs.join(" → ") || t("none"))}${result.gaps.length ? `<br><strong>${t("missing")}</strong> · ${escape(result.gaps.join(" · "))}` : ""}</div><ol class="plan">${result.plan.map((p) => `<li>${escape(p)}</li>`).join("")}</ol><details><summary>${t("constraints")}</summary><ul>${result.constraints.map((c) => `<li><strong>${escape(c.skillId)}</strong> · ${escape(c.text)}</li>`).join("")}${result.checks.map((c) => `<li>${escape(c)}</li>`).join("")}</ul></details>${result.growth?.allowed === false ? `<p class="growth-limit" role="status">${escape(result.growth.reason)}</p>` : ""}<div class="result-buttons"><button id="save" class="primary" ${saved ? "disabled" : ""}>${t(saved ? "saved" : "save")}</button><button id="grow" class="quiet" ${!saved || grown || result.growth?.allowed === false ? "disabled" : ""}>${t("grow")} ↗</button>${grown ? `<button id="download" class="quiet">${t("download")} ↓</button>` : ""}</div><div id="grow-picker" hidden></div>`;
+    `<div class="result-header"><h3 id="result-title">${escape(result.title)}</h3><span class="match ${result.gaps.length ? "gap" : ""}">${t(result.gaps.length ? "gap" : "ready")}</span></div><p class="disclaimer">${escape(result.disclaimer)}</p><div class="handoff"><strong>${t("handoff")}</strong> · ${escape(result.handoffs.join(" → ") || t("none"))}${result.gaps.length ? `<br><strong>${t("missing")}</strong> · ${escape(result.gaps.join(" · "))}` : ""}${approved.length ? `<br><strong>${t("bridgeApproved")}</strong> · ${escape(approved.map((b) => `${b.fromOutput} → ${b.toInput}${lang === "zh" ? "（" : " ("}${b.note}${lang === "zh" ? "）" : ")"}`).join(" · "))}` : ""}</div><ol class="plan">${result.plan.map((p) => `<li>${escape(p)}</li>`).join("")}</ol><details><summary>${t("constraints")}</summary><ul>${result.constraints.map((c) => `<li><strong>${escape(c.skillId)}</strong> · ${escape(c.text)}</li>`).join("")}${result.checks.map((c) => `<li>${escape(c)}</li>`).join("")}</ul></details>${result.growth?.allowed === false ? `<p class="growth-limit" role="status">${escape(result.growth.reason)}</p>` : ""}${result.gaps.length && !saved ? `<div class="bridge-editor"><p class="subtle">${escape(t("bridgeIntro"))}</p>${bridgeRows}<button id="bridge-apply" class="quiet">${escape(t("bridgeApply"))}</button></div>` : ""}<div class="result-buttons"><button id="save" class="primary" ${saved ? "disabled" : ""}>${t(saved ? "saved" : "save")}</button><button id="grow" class="quiet" ${!saved || grown || result.growth?.allowed === false ? "disabled" : ""}>${t("grow")} ↗</button>${grown ? `<button id="download" class="quiet">${t("download")} ↓</button>` : ""}</div><div id="grow-picker" hidden></div>`;
 }
 function busy(value) {
   $("first").disabled = value;
@@ -365,6 +387,7 @@ function invalidate() {
   saved = false;
   grown = undefined;
   growChoice = undefined;
+  approvedBridges = [];
   $("result").hidden = true;
   $("empty-result").hidden = false;
   contracts();
@@ -391,6 +414,7 @@ async function run() {
     second: $("second").value,
     goal: $("goal").value,
     language: lang,
+    ...(approvedBridges.length ? { bridges: approvedBridges } : {}),
   };
   result = undefined;
   grown = undefined;
@@ -466,11 +490,31 @@ document.addEventListener("click", async (event) => {
     saved = true;
     grown = undefined;
     growChoice = undefined;
+    approvedBridges = result?.bridges ?? [];
     renderResult();
     $("result").scrollIntoView({
       behavior: reduced.matches ? "instant" : "smooth",
       block: "nearest",
     });
+  }
+  if (button.id === "bridge-apply" && result && !saved) {
+    const chosen = [];
+    for (const gap of result.gaps) {
+      const from = document.querySelector(
+        `[data-bridge="${CSS.escape(gap)}"]`,
+      )?.value;
+      const note = document.querySelector(
+        `[data-bridge-note="${CSS.escape(gap)}"]`,
+      )?.value;
+      if (from)
+        chosen.push({ fromOutput: from, toInput: gap, note: note ?? "" });
+    }
+    if (chosen.some((b) => !b.note)) {
+      notify(t("bridgeNeedNote"));
+      return;
+    }
+    approvedBridges = chosen;
+    run();
   }
   if (button.id === "save" && result) {
     button.disabled = true;
@@ -481,6 +525,7 @@ document.addEventListener("click", async (event) => {
         second: snapshot.parents[1].id,
         goal: snapshot.goal,
         language: snapshot.language,
+        ...(snapshot.bridges?.length ? { bridges: snapshot.bridges } : {}),
       });
       if (result === snapshot) {
         saved = true;

@@ -136,6 +136,68 @@ it("discloses growth capacity before offering a draft and never truncates parent
   expect(long.growth.allowed).toBe(false);
 });
 
+describe("contract bridges (v0.4.0)", () => {
+  const bridge = {
+    fromOutput: "evidence-brief",
+    toInput: "verified-results",
+    note: "A reviewed evidence brief counts as verified source material.",
+  };
+  it("closes a gap only through an author-approved bridge", () => {
+    const result = collide(a!, d!, "Write a release", "en", [bridge]);
+    expect(result.mode).toBe("connected");
+    expect(result.gaps).toEqual([]);
+    expect(result.handoffs).toEqual([]);
+    expect(result.bridges).toEqual([bridge]);
+    expect(result.plan.join("\n")).toContain("Author-approved");
+    expect(collide(a!, d!, "发布", "zh", [bridge]).plan.join("\n")).toContain(
+      "作者批准",
+    );
+  });
+  it("changes the fingerprint, keeps bridge-free IDs stable, and survives partial bridging", () => {
+    const bare = collide(a!, d!, "Write a release"),
+      bridged = collide(a!, d!, "Write a release", "en", [bridge]);
+    expect(bridged.id).not.toBe(bare.id);
+    expect(collide(a!, b!, "Make", "en", []).id).toBe(
+      collide(a!, b!, "Make").id,
+    );
+    const twoInputs = { ...d!, inputs: ["verified-results", "raw-log"] };
+    const partial = collide(a!, twoInputs, "Release", "en", [bridge]);
+    expect(partial.mode).toBe("bridge-needed");
+    expect(partial.gaps).toEqual(["raw-log"]);
+  });
+  it("fails visibly on every mismatched or incomplete bridge", () => {
+    const cases = [
+      [{ ...bridge, fromOutput: "not-an-output" }],
+      [{ ...bridge, toInput: "not-an-input" }],
+      [bridge, bridge],
+      [{ fromOutput: "evidence-brief", toInput: "verified-results" }],
+      [
+        {
+          fromOutput: "evidence-brief",
+          toInput: "verified-results",
+          note: " ",
+        },
+      ],
+      "not-an-array",
+    ];
+    const code = (fn: () => unknown) => {
+      try {
+        fn();
+      } catch (error) {
+        return (error as { code?: string }).code;
+      }
+    };
+    for (const bad of cases)
+      expect(code(() => collide(a!, d!, "Release", "en", bad))).toBe(
+        "INVALID_BRIDGE",
+      );
+    // A name-matched input cannot be bridged again.
+    expect(() =>
+      collide(a!, b!, "Make", "en", [{ ...bridge, toInput: "evidence-brief" }]),
+    ).toThrow("already matches by name");
+  });
+});
+
 describe("growth relationships (v0.3.0)", () => {
   const collision = collide(a!, b!, "Make a testable prototype");
   it("defaults to derived_from_parents and stamps the relationship", () => {
