@@ -10,7 +10,7 @@ This roadmap covers Spark only. The complete product, standalone app and native-
 | v0.2 Import / 导入 | Reviewable SKILL.md import and seventh preview tool / 可审阅导入与第七个预览工具 | Unmapped content visible, no execution, reviewed round-trip / 未映射内容可见、不执行、审阅往返 |
 | v0.2.1 Audit / 审计 | Contract preservation, capacity disclosure, truthful persistence feedback / 契约保留、容量披露与准确保存反馈 | Targeted regressions and independent follow-up review / 针对性回归与独立复审 |
 | v0.3.0 Growth relationships / 来源关系 | Three-way lineage on grow (derived / extend / independent with author draft), persisted and export-reimportable / 生长三分法并支持导出往返 | Core, store, tool, browser regressions green / 核心、存储、工具与浏览器回归全绿 |
-| Contract adapters / 契约适配 | Explicit typed handoffs and human-approved bridges / 显式类型与人工确认桥接 | Mismatches fail visibly; synthetic fixtures verify conversions / 不匹配明确失败、合成样例验证 |
+| v0.4.0 Contract adapters / 契约适配 | Author-approved bridges on collide: an explicit A-output → B-input mapping with a required note / 碰撞时作者批准的桥：A 输出 → B 输入显式映射，必附理由 | Delivered in v0.4.0: mismatched or note-free bridges fail with INVALID_BRIDGE; bridges change the fingerprint, persist with the collision, and core/store/server/plugin/browser fixtures cover them / 0.4.0 已交付：端点不符或缺理由即 INVALID_BRIDGE；桥改变指纹、随碰撞持久化，核心/存储/服务/插件/浏览器合成样例覆盖 |
 | Plugin workspace portability / 插件数据迁移 | Versioned backup/restore for plugin Skills and collisions / 插件技能与碰撞的版本化备份恢复 | Validated restore, ID conflicts, failure safety and lineage preservation / 恢复、冲突、失败保护与来源保留 |
 | Host experience / 宿主体验 | DSH renderer if supported and actual agent integration / 接口支持时的结果卡与 Agent 集成 | Pinned-host tool flow, cancellation and failure paths / 锁定宿主流程、取消与失败验证 |
 
@@ -26,6 +26,6 @@ Optional model suggestions must be opt-in, disclose provider/data boundaries and
 
 ## Current checkpoint / 当前节点
 
-v0.3.2 is the current plugin checkpoint: 90/90 core/integration tests, typecheck, release verification and a pinned-host smoke (DSH 0.2.2-rc.1, `dsh.bundle` install) pass locally, and the plugin is published to npm through trusted publishing; browser regression counts are refreshed in [test evidence](TESTING.md). These results cover the plugin only, not the standalone application. The next feature milestone is explicit contract adapters; backup/restore and host experience remain undelivered.
+v0.4.0 is the current plugin checkpoint: 94/94 core/integration tests and 13 browser tests pass locally, together with typecheck, release verification and a pinned-host smoke (DSH 0.2.2-rc.1, `dsh.bundle` install); the plugin is published to npm through trusted publishing. Contract adapters shipped in v0.4.0 as author-approved bridges. These results cover the plugin only, not the standalone application. The next feature milestone is plugin workspace portability (backup/restore); host experience remains undelivered.
 
-当前插件节点为 v0.3.2：90/90 项核心/集成测试、类型检查、发布校验与锁定宿主冒烟（DSH 0.2.2-rc.1、`dsh.bundle` 一键安装）本地通过，插件已通过 trusted publishing 发布到 npm；浏览器回归读数见测试证据页。该结果只覆盖插件，不代表主 App 验收。下一功能节点是显式契约适配；备份恢复与宿主体验尚未交付。
+当前插件节点为 v0.4.0：94/94 项核心/集成测试与 13 项浏览器测试本地通过，另有类型检查、发布校验与锁定宿主冒烟（DSH 0.2.2-rc.1、`dsh.bundle` 一键安装）；插件已通过 trusted publishing 发布到 npm。契约适配以「作者批准的桥」形态于 0.4.0 交付。该结果只覆盖插件，不代表主 App 验收。下一功能节点是插件数据迁移（备份恢复）；宿主体验尚未交付。

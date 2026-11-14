@@ -108,6 +108,42 @@ test("mobile layout, gap disclosure and escaped imported content", async ({
   await expect(page.locator(".skill-card")).toHaveCount(1);
   await expect(page.locator(".skill-card img")).toHaveCount(0);
 });
+test("author-approved bridge closes a gap and saves with its note (v0.4.0)", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.locator("#second").selectOption("release-story");
+  await page.locator("#collide").click();
+  await expect(page.locator("#result")).toContainText("A bridge is needed");
+  await expect(page.locator(".bridge-editor")).toBeVisible();
+  // A mapping without an approval note is refused; nothing is re-collided.
+  await page
+    .locator("[data-bridge='verified-results']")
+    .selectOption("evidence-brief");
+  await page.locator("#bridge-apply").click();
+  await expect(page.locator("#status")).toContainText("note");
+  await expect(page.locator("#stage")).not.toHaveClass(/running/);
+  // With the note, the approved bridge connects and is disclosed in the result.
+  await page
+    .locator("[data-bridge-note='verified-results']")
+    .fill("A reviewed evidence brief counts as verified material.");
+  await page.locator("#bridge-apply").click();
+  await expect(page.locator("#result")).toContainText(
+    "Declared contracts connect",
+  );
+  await expect(page.locator("#result")).toContainText("Approved bridges");
+  await expect(page.locator("#result")).toContainText(
+    "A reviewed evidence brief counts as verified material.",
+  );
+  await expect(page.locator(".bridge-editor")).toHaveCount(0);
+  await captureDocument(page, "docs/screenshots/bridge-en.png");
+  await page.locator("#save").click();
+  await expect(page.locator("#save")).toBeDisabled();
+  await page.reload();
+  await expect(page.locator(".history-card").first()).toContainText(
+    "Research Synthesis × Release Story",
+  );
+});
 test("keyboard dialog dismiss and save failure never reports success", async ({
   page,
 }) => {

@@ -60,6 +60,32 @@ it("loads in the real Cordis + DSH ToolRuntime, dispatches the whole growth loop
     goal: "Make",
   });
   expect(preview.isError).toBe(false);
+  const bridged = await call("spark_collide", {
+    first: "research-synthesis",
+    second: "release-story",
+    goal: "Release",
+    bridges: [
+      {
+        fromOutput: "evidence-brief",
+        toInput: "verified-results",
+        note: "Reviewed brief counts as verified.",
+      },
+    ],
+  });
+  expect(bridged.isError).toBe(false);
+  expect(
+    JSON.parse((bridged.content[0] as { text: string }).text).collision.mode,
+  ).toBe("connected");
+  expect(
+    await call("spark_collide", {
+      first: "research-synthesis",
+      second: "release-story",
+      goal: "Release",
+      bridges: [
+        { fromOutput: "ghost", toInput: "verified-results", note: "n" },
+      ],
+    }),
+  ).toMatchObject({ isError: true });
   const saved = await call("spark_collide", {
     first: "research-synthesis",
     second: "prototype-builder",

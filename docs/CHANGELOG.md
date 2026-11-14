@@ -1,11 +1,24 @@
 # Changes / 更新记录
 
-## 0.3.5 · 2026-11-14 · host alignment to DSH 0.2.2-rc.3 / 宿主对齐到 DSH 0.2.2-rc.3
+## 0.4.1 · 2026-11-14 · contract adapters on DSH 0.2.2-rc.3 / 契约适配落在 0.2.2-rc.3 上
 
-- Compatibility target moves to `@deepseek-ai/dsh@0.2.2-rc.3` and `@deepseek-ai/dsh-tools@0.2.2-rc.3`; `@deepseek-ai/cordis` stays 4.1.0. / 兼容目标升级到 DSH 0.2.2-rc.3 与工具包 0.2.2-rc.3；Cordis 仍为 4.1.0。
-- The installed `docs/upgrade-guide` for v0.2.2-rc.1 → rc.3 lists 18 entries; none changes a surface this plugin uses. The only plugin-related entry, `plugin-update-method` (`BundleInfo.updatable` → `BundleInfo.update`), affects code that reads `pluginManager.listBundles()`; Spark does not. The public `dsh-tools` exports differ only by the added `ToolContextUnavailableError`. / 安装目录里的 rc.1→rc.3 升级指南共 18 条，没有一条涉及本插件使用的 surface；唯一与插件相关的 `plugin-update-method`（`BundleInfo.updatable` → `BundleInfo.update`）只影响读 `pluginManager.listBundles()` 的代码，Spark 不涉及；`dsh-tools` 公共导出的差异只有新增 `ToolContextUnavailableError`。
-- Verified against a fresh rc.3 host: the pinned-host smoke boots an isolated profile with the absolute-path patch, seeds four Skills and serves HTTP 200. The 90/90 tests and browser suite are unchanged. / 在全新 rc.3 宿主上验证：锁定宿主冒烟用绝对路径 patch 启动隔离 profile、播种 4 个技能、HTTP 200；90/90 测试与浏览器套件不变。
-- No tool-contract or database-schema change. / 工具契约与数据库 schema 不变。
+- Combines the 0.4.0 contract adapters with the host alignment to `@deepseek-ai/dsh@0.2.2-rc.3` / `dsh-tools@0.2.2-rc.3` (`@deepseek-ai/cordis` stays 4.1.0). / 把 0.4.0 的契约适配与 DSH 0.2.2-rc.3 / dsh-tools 0.2.2-rc.3 的宿主对齐合并发布（Cordis 仍为 4.1.0）。
+- 0.3.5 was tagged but never published: npm already carried 0.4.0 (published 2026-11-12 from a detached commit), and npm refuses an implicit `latest` for a lower version. This release supersedes both, and the 0.4.0 source now lives on `main`. / 0.3.5 打过 tag 但未发布：npm 上已有 0.4.0（2026-11-12 从游离提交发布），npm 拒绝把更低的版本设为 `latest`；本版合并两者，0.4.0 的源码现已并入 `main`。
+- The installed `docs/upgrade-guide` for v0.2.2-rc.1 → rc.3 lists 18 entries; none changes a surface this plugin uses. The only plugin-related entry, `plugin-update-method` (`BundleInfo.updatable` → `BundleInfo.update`), affects code that reads `pluginManager.listBundles()`; Spark does not. The public `dsh-tools` exports differ only by the added `ToolContextUnavailableError`. / 安装目录里的 rc.1→rc.3 升级指南共 18 条，没有一条涉及本插件使用的 surface；唯一与插件相关的 `plugin-update-method` 只影响读 `pluginManager.listBundles()` 的代码；`dsh-tools` 公共导出的差异只有新增 `ToolContextUnavailableError`。
+- Verified on a fresh rc.3 host with the merged tree: 94/94 core and integration tests, 13 browser tests, typecheck, release verification and the pinned-host smoke (isolated profile, absolute-path patch, four Skills, HTTP 200). / 合并后在全新 rc.3 宿主上验证：94/94 核心与集成测试、13 项浏览器测试、类型检查、发布校验与锁定宿主冒烟（隔离 profile、绝对路径 patch、4 个技能、HTTP 200）。
+- No database-schema change. / 数据库 schema 不变。
+
+## 0.4.0 · 2026-11-10 · contract adapters / 契约适配
+
+- `spark_collide` accepts optional author-approved **bridges**: an explicit mapping of one declared A output to one B input the name match missed, each carrying the human's note on why the mapping holds. A bridged collision reports `connected` only when every remaining input is covered; bridges are disclosed in the plan and in the result. / `spark_collide` 新增可选的作者批准**契约桥**：把 A 的某个声明输出显式映射到名称匹配漏掉的 B 输入，每条必附作者理由；仅当其余输入也全部有着落时才报 `connected`，桥在方案与结果中明示。
+- Mismatches fail visibly with `INVALID_BRIDGE`: unknown endpoints, inputs already matched by name, duplicate targets, and missing or blank notes are all rejected — the engine never guesses a conversion. / 不匹配即明确失败：未知端点、名称已匹配的输入、重复目标、缺失或空白理由一律 `INVALID_BRIDGE` 拒绝——引擎绝不猜测转换。
+- Bridges change the collision fingerprint (and therefore its ID), persist with the saved collision, and reappear from history; bridge-free collisions keep their pre-0.4.0 IDs, so existing saved history stays matched. / 桥会改变碰撞指纹（进而改变 ID），随碰撞保存并在历史中还原；无桥碰撞保持 0.4.0 之前的 ID，既有保存历史不失效。
+- Studio shows a bridge editor whenever gaps remain: pick an A output per missing input, write the approval note, re-collide. Saving a bridged collision stores the bridges. / Studio 在存在缺口时显示桥接编辑器：为每个缺失输入选 A 输出、写批准理由、重新碰撞；保存时桥一并入库。
+- A bridge is a declaration, not a verified conversion: the disclaimer, checks and growth limits are unchanged, and no Skill is executed. / 桥是声明而非经验证的转换：免责声明、检查项与生长容量限制不变，不执行任何 Skill。
+
+## 0.3.5 · 2026-11-14 · host alignment to DSH 0.2.2-rc.3 (unpublished) / 宿主对齐（未发布）
+
+- Compatibility target moved to `@deepseek-ai/dsh@0.2.2-rc.3` and `@deepseek-ai/dsh-tools@0.2.2-rc.3`; superseded by 0.4.1, which carries the same alignment. / 兼容目标升级到 DSH 0.2.2-rc.3 与 dsh-tools 0.2.2-rc.3；已由 0.4.1 承接。
 
 ## 0.3.4 · 2026-11-11 · install from Git source / 源码安装
 

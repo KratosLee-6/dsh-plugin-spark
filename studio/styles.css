@@ -1162,3 +1162,37 @@ dialog textarea {
   padding: 6px 8px;
   resize: vertical;
 }
+.bridge-editor {
+  border: 1px solid var(--line, #d8dee8);
+  border-radius: 10px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+.bridge-row {
+  display: grid;
+  grid-template-columns: minmax(90px, 1fr) minmax(120px, 1.4fr) minmax(
+      140px,
+      1.6fr
+    );
+  gap: 8px;
+  align-items: center;
+}
+.bridge-gap {
+  font-size: 12px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.bridge-row select,
+.bridge-row input {
+  font: inherit;
+  font-size: 12px;
+  padding: 6px 8px;
+  min-width: 0;
+}
+@media (max-width: 560px) {
+  .bridge-row {
+    grid-template-columns: 1fr;
+  }
+}

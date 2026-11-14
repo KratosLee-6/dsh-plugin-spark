@@ -67,15 +67,15 @@ npm run test:ui
 | Check / 检查                      | Result / 结果                                                    | Scope / 范围                                                                                       |
 | --------------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
 | TypeScript                        | Passed / 通过                                                    | Static types and build / 静态类型与构建                                                            |
-| Core and integration / 核心与集成 | 90 tests, 5 files / 90 项、5 个文件                              | Contracts, composition, persistence, plugin lifecycle, HTTP / 契约、组合、存储、插件生命周期、HTTP |
-| Browser / 浏览器                  | 12 tests / 12 项                                                   | Desktop and 390px layouts, bilingual flows, grow relationships / 桌面、390px、双语流程、生长关系 |
+| Core and integration / 核心与集成 | 94 tests, 5 files / 94 项、5 个文件                              | Contracts, composition, bridges, persistence, plugin lifecycle, HTTP / 契约、组合、契约桥、存储、插件生命周期、HTTP |
+| Browser / 浏览器                  | 13 tests / 13 项                                                   | Desktop and 390px layouts, bilingual flows, grow relationships, approved bridges / 桌面、390px、双语流程、生长关系、批准桥 |
 | Accessibility / 无障碍            | No violations in tested axe WCAG A/AA scans / 已测页面未发现违规 | Automated scan only / 仅自动扫描                                                                   |
 | DSH host / 宿主                   | Passed / 通过                                                    | Fresh isolated profile, patch load, 4 examples, HTTP 200 / 隔离配置、加载插件、4 个示例、页面响应  |
 | npm audit                         | Runtime dependencies 0 on 2026-11-09; dev dependency tree reports 214 (11 moderate, 203 high), all inside the pinned `@deepseek-ai/dsh` host-SDK chain / 运行时依赖 2026-11-09 为 0；开发依赖树报告 214（11 中、203 高），全部位于锁定的 `@deepseek-ai/dsh` 宿主 SDK 依赖链 | Clean with `npm audit --omit=dev`; dev-chain advisories belong to the pinned host SDK and are not fixable here without breaking host alignment / `npm audit --omit=dev` 为 0；开发链公告属于锁定的宿主 SDK，本插件无法在不破坏宿主对齐的前提下修复 |
 
-Coverage for src/core.ts, src/store.ts, src/index.ts, src/server.ts and src/markdown.ts: **96.69% statements, 89.57% branches, 98.46% functions, 97% lines** (refreshed for v0.3.0 relationship code). CLI, examples and Studio JavaScript are outside this coverage denominator; CLI and UI have separate smoke/browser checks.
+Coverage for src/core.ts, src/store.ts, src/index.ts, src/server.ts and src/markdown.ts: **96.49% statements, 89.26% branches, 97.22% functions, 96.76% lines** (refreshed for v0.4.0 bridge code). CLI, examples and Studio JavaScript are outside this coverage denominator; CLI and UI have separate smoke/browser checks.
 
-覆盖率统计仅包含上述五个核心文件：语句 96.69%、分支 89.57%、函数 98.46%、行 97%（随 v0.3.0 关系代码刷新）。CLI、示例和 Studio JavaScript 不在分母内，另有冒烟与浏览器验证。高覆盖率不等于没有缺陷。
+覆盖率统计仅包含上述五个核心文件：语句 96.49%、分支 89.26%、函数 97.22%、行 96.76%（随 v0.4.0 契约桥代码刷新）。CLI、示例和 Studio JavaScript 不在分母内，另有冒烟与浏览器验证。高覆盖率不等于没有缺陷。
 
 Browser assertions cover collision, save, growth, SKILL.md download, history after reload, cancellation, reduced motion, missing inputs, malicious HTML treated as text, and truthful save-failure feedback. Tests generate the committed [English screenshot](screenshots/studio-en.png), [Chinese screenshot](screenshots/collision-zh.png) and [mobile-width screenshot](screenshots/mobile-en.png) using synthetic examples.
 

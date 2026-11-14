@@ -90,16 +90,23 @@ export class SparkStore {
     }
     return { skill, created: result.changes === 1 };
   }
-  preview(a: string, b: string, goal: string, language: Language): Collision {
-    return collide(this.skill(a), this.skill(b), goal, language);
+  preview(
+    a: string,
+    b: string,
+    goal: string,
+    language: Language,
+    rawBridges?: unknown,
+  ): Collision {
+    return collide(this.skill(a), this.skill(b), goal, language, rawBridges);
   }
   save(
     a: string,
     b: string,
     goal: string,
     language: Language,
+    rawBridges?: unknown,
   ): { collision: Collision; created: boolean } {
-    const collision = this.preview(a, b, goal, language);
+    const collision = this.preview(a, b, goal, language, rawBridges);
     const result = this.db
       .prepare("INSERT OR IGNORE INTO collisions VALUES (?, ?)")
       .run(collision.id, JSON.stringify(collision));

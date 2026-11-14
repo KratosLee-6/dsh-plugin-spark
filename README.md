@@ -16,7 +16,7 @@
 - **Compose, then grow.** Research Synthesis → Prototype Builder produces a draft; that draft can meet Accessibility Review in a second generation.
 - **Choose the lineage.** A grown draft declares its relationship: combine both parents, extend one side (the other stays inspiration), or stand alone with an author-supplied contract. Parent skills are sources and inspiration, never a bloodline constraint — and both parents' constraints stay attached under every relationship.
 - **Keep the roots.** Every collision stores source snapshots, an engine version, a content fingerprint, constraints and parent IDs.
-- **Make gaps useful.** Missing downstream inputs become explicit bridge requirements, not invented success scores.
+- **Make gaps useful.** Missing downstream inputs become explicit bridge requirements, not invented success scores. Since 0.4.0 a human can approve a typed bridge (A output → B input, with a note); it is recorded as a declaration, never as a verified conversion.
 - **Own your workspace.** SQLite on your device, no telemetry, no external fonts, no runtime CDN and no model key required for Spark's engine or Studio.
 - **Use it your way.** Seven native DSH tools, a bilingual Studio, and `SKILL.md` export. A quiet, cancellable collision animation respects reduced motion; there is no navigation sound.
 
@@ -79,7 +79,7 @@ In DSH, call `spark_preview_import` with `markdown`, show the draft and unmapped
 | `spark_search`         | Search names, descriptions, tags and declared contracts       | No                     |
 | `spark_inspect`        | Read a Skill, constraints and lineage                         | No                     |
 | `spark_import`         | Validate and import one structured Skill JSON                 | Yes, on request        |
-| `spark_collide`        | Compose A → B; report handoffs, gaps, plans and checks        | Only with `save: true` |
+| `spark_collide`        | Compose A → B; report handoffs, gaps, plans and checks; optional author-approved bridges close name-match gaps | Only with `save: true` |
 | `spark_grow`           | Grow a saved collision into a reusable draft with an explicit relationship — `derived_from_parents` (default), `novel_extension` (`extend: "a"\|"b"`) or `independent_new_skill` (author-supplied draft); return SKILL.md | Yes, on request        |
 | `spark_history`        | Read up to 100 saved collisions with source snapshots         | No                     |
 

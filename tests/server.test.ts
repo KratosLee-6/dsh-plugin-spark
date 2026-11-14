@@ -122,6 +122,51 @@ it("bounds input and reports actionable failures without raw database errors", a
   expect((await post("/api/import", { json: "x".repeat(71000) })).status).toBe(
     400,
   );
+  const bridges = [
+    {
+      fromOutput: "evidence-brief",
+      toInput: "verified-results",
+      note: "Reviewed brief counts as verified.",
+    },
+  ];
+  const bridged = await (
+    await post("/api/collide", {
+      first: "research-synthesis",
+      second: "release-story",
+      goal: "Release",
+      language: "en",
+      bridges,
+    })
+  ).json();
+  expect(bridged.collision.mode).toBe("connected");
+  expect(bridged.collision.bridges).toEqual(bridges);
+  expect(
+    (
+      await post("/api/save", {
+        first: "research-synthesis",
+        second: "release-story",
+        goal: "Release",
+        language: "en",
+        bridges,
+      })
+    ).status,
+  ).toBe(200);
+  for (const bad of [
+    [{}],
+    [{ fromOutput: "ghost", toInput: "verified-results", note: "n" }],
+    [{ fromOutput: "evidence-brief", toInput: "ghost", note: "n" }],
+  ])
+    expect(
+      (
+        await post("/api/collide", {
+          first: "research-synthesis",
+          second: "release-story",
+          goal: "Release",
+          language: "en",
+          bridges: bad,
+        })
+      ).status,
+    ).toBe(400);
   for (const body of ["{", "[]", "null"])
     expect(
       (

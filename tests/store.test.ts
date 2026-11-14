@@ -33,6 +33,32 @@ describe("SQLite persistence", () => {
     expect(s.skill(examples[0]!.id).name).toBe(examples[0]!.name);
     expect(() => s.skill("missing")).toThrow();
   });
+  it("persists author-approved bridges and round-trips them through history (v0.4.0)", () => {
+    const s = open(),
+      a = examples[0]!.id,
+      d = examples[3]!.id;
+    const bridges = [
+      {
+        fromOutput: "evidence-brief",
+        toInput: "verified-results",
+        note: "Reviewed brief counts as verified.",
+      },
+    ];
+    const saved = s.save(a, d, "Release", "en", bridges);
+    expect(saved.created).toBe(true);
+    expect(saved.collision.mode).toBe("connected");
+    expect(saved.collision.bridges).toEqual(bridges);
+    const fromHistory = s.history().find((c) => c.id === saved.collision.id);
+    expect(fromHistory?.bridges).toEqual(bridges);
+    expect(fromHistory?.mode).toBe("connected");
+    // A bridge-free save of the same pair keeps its own pre-0.4.0-style ID.
+    const bare = s.save(a, d, "Release", "en");
+    expect(bare.collision.id).not.toBe(saved.collision.id);
+    expect(bare.collision.bridges).toEqual([]);
+    expect(() =>
+      s.save(a, d, "Release", "en", [{ ...bridges[0], fromOutput: "nope" }]),
+    ).toThrow("not declared by A");
+  });
   it("does not persist previews; repeated saves and growth do not duplicate records", () => {
     const s = open(),
       a = examples[0]!.id,
