@@ -38,7 +38,7 @@ Four original, synthetic examples are included. Import your own structured JSON 
 
 ### Load into DeepSeek Harness
 
-Compatibility target: **`@deepseek-ai/dsh@0.2.2-rc.1`**, **`@deepseek-ai/dsh-tools@0.2.2-rc.1`**, **`@deepseek-ai/cordis@4.1.0`** (from 2026-11-08; 0.1.5-rc.2 was the previous target and remains in the history). Harness is a developer preview; pin versions and retest upgrades. This repository is an independent community plugin, not an official DeepSeek product.
+Compatibility target: **`@deepseek-ai/dsh@0.2.2-rc.3`**, **`@deepseek-ai/dsh-tools@0.2.2-rc.3`**, **`@deepseek-ai/cordis@4.1.0`** (from 2026-11-14; 0.2.2-rc.1 and 0.1.5-rc.2 were the previous targets and remain in the history). DSH is a developer preview; pin versions and retest upgrades. This repository is an independent community plugin, not an official DeepSeek product.
 
 From this cloned and built repository:
 

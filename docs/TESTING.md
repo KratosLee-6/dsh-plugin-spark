@@ -1,6 +1,12 @@
 # Test evidence / 测试证据
 
-Evidence date / 记录日期: 2026-11-08 (host alignment to DSH 0.2.2-rc.1); v0.3.0 growth relationships and earlier evidence retained below where still applicable. Version / 版本: 0.3.0 + unreleased host alignment.
+Evidence date / 记录日期: 2026-11-14 (host alignment to DSH 0.2.2-rc.3); v0.3.0 growth relationships and earlier evidence retained below where still applicable. Version / 版本: 0.3.5.
+
+## Host alignment / 宿主对齐 · 2026-11-14 · DSH 0.2.2-rc.3
+
+Local Windows verification on `@deepseek-ai/dsh@0.2.2-rc.3`, `@deepseek-ai/dsh-tools@0.2.2-rc.3` and `@deepseek-ai/cordis@4.1.0` (Node.js 24.15.0): 90/90 core+integration tests, `tsc --noEmit`, `verify:release`, and the pinned-host smoke (fresh isolated profile, absolute-path patch, four synthetic Skills, HTTP 200). The installed `docs/upgrade-guide` for v0.2.2-rc.1 → rc.3 was read in full: its 18 entries change account notifications, CUA, Forge, Office, terminals, web search, session append and plugin-manager API consumers — none of them touches a surface this plugin uses. The only plugin-related entry, `plugin-update-method`, replaces `BundleInfo.updatable` with `BundleInfo.update` for code reading `pluginManager.listBundles()`; Spark does not. The `dsh-tools` public export list differs only by the added `ToolContextUnavailableError`, so no migration applies.
+
+本地以 DSH 0.2.2-rc.3 回归：90/90 核心+集成测试、类型检查、发布校验、锁定宿主冒烟（全新隔离 profile、绝对路径 patch、4 个合成技能、HTTP 200）全部通过。完整读了安装目录的 rc.1→rc.3 升级指南，18 条变更涉及账号通知、CUA、Forge、Office、终端、网页搜索、session append 与插件管理器 API 消费者，均不涉及本插件使用的 surface；唯一与插件相关的 `plugin-update-method`（`BundleInfo.updatable` → `BundleInfo.update`）只影响读 `pluginManager.listBundles()` 的代码，Spark 不涉及；`dsh-tools` 公共导出的差异只有新增 `ToolContextUnavailableError`，无需迁移。
 
 ## Host alignment / 宿主对齐 · 2026-11-08
 

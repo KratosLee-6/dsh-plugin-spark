@@ -7,7 +7,7 @@ Spark 的代码、合成技能示例、SVG 标志和 CSS 图形由本项目原�
 Runtime peers / 运行时对等依赖:
 
 - `@deepseek-ai/cordis` 4.1.0 — MIT.
-- `@deepseek-ai/dsh-tools` 0.2.2-rc.1 — MIT.
+- `@deepseek-ai/dsh-tools` 0.2.2-rc.3 — MIT.
 - Node.js supplies `node:sqlite`, HTTP and cryptography. Node.js and SQLite retain their upstream notices. / Node.js 提供 SQLite、HTTP 和加密模块，保留上游声明。
 
 Development dependencies, including DeepSeek Harness CLI, TypeScript, Vitest and Playwright, retain the license files supplied with their npm packages. The lockfile records exact resolved versions. Spark's package does not bundle these dependencies into its own code; package managers install their distributions separately.

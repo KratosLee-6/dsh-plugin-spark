@@ -35,7 +35,7 @@ npm run studio
 
 ### 接入 DeepSeek Harness
 
-兼容目标：**`@deepseek-ai/dsh@0.2.2-rc.1`**、**`@deepseek-ai/dsh-tools@0.2.2-rc.1`**、**`@deepseek-ai/cordis@4.1.0`**（2026-11-08 起；0.1.5-rc.2 为上一代兼容目标，保留于历史记录）。DSH 仍处于开发者预览阶段，请锁定版本并在升级时回归。本项目是独立社区插件，不代表 DeepSeek 官方产品。
+兼容目标：**`@deepseek-ai/dsh@0.2.2-rc.3`**、**`@deepseek-ai/dsh-tools@0.2.2-rc.3`**、**`@deepseek-ai/cordis@4.1.0`**（2026-11-14 起；0.2.2-rc.1 与 0.1.5-rc.2 为前两代兼容目标，保留于历史记录）。DSH 仍处于开发者预览阶段，请锁定版本并在升级时回归。本项目是独立社区插件，不代表 DeepSeek 官方产品。
 
 在已克隆并构建的项目目录运行：
 

@@ -1,5 +1,12 @@
 # Changes / 更新记录
 
+## 0.3.5 · 2026-11-14 · host alignment to DSH 0.2.2-rc.3 / 宿主对齐到 DSH 0.2.2-rc.3
+
+- Compatibility target moves to `@deepseek-ai/dsh@0.2.2-rc.3` and `@deepseek-ai/dsh-tools@0.2.2-rc.3`; `@deepseek-ai/cordis` stays 4.1.0. / 兼容目标升级到 DSH 0.2.2-rc.3 与工具包 0.2.2-rc.3；Cordis 仍为 4.1.0。
+- The installed `docs/upgrade-guide` for v0.2.2-rc.1 → rc.3 lists 18 entries; none changes a surface this plugin uses. The only plugin-related entry, `plugin-update-method` (`BundleInfo.updatable` → `BundleInfo.update`), affects code that reads `pluginManager.listBundles()`; Spark does not. The public `dsh-tools` exports differ only by the added `ToolContextUnavailableError`. / 安装目录里的 rc.1→rc.3 升级指南共 18 条，没有一条涉及本插件使用的 surface；唯一与插件相关的 `plugin-update-method`（`BundleInfo.updatable` → `BundleInfo.update`）只影响读 `pluginManager.listBundles()` 的代码，Spark 不涉及；`dsh-tools` 公共导出的差异只有新增 `ToolContextUnavailableError`。
+- Verified against a fresh rc.3 host: the pinned-host smoke boots an isolated profile with the absolute-path patch, seeds four Skills and serves HTTP 200. The 90/90 tests and browser suite are unchanged. / 在全新 rc.3 宿主上验证：锁定宿主冒烟用绝对路径 patch 启动隔离 profile、播种 4 个技能、HTTP 200；90/90 测试与浏览器套件不变。
+- No tool-contract or database-schema change. / 工具契约与数据库 schema 不变。
+
 ## 0.3.4 · 2026-11-11 · install from Git source / 源码安装
 
 - `prepare` builds `dist/` at install time, so a Git dependency (`dsh plugin --profile web add github:KratosLee-6/dsh-plugin-spark`) produces the same bundle as the npm package instead of unbuilt source. pnpm 11 blocks build scripts by default, so the installer prints the exact `allowBuilds` key to approve. The gap was reported by the awesome-dsh-plugin maintainer on the listing PR: `dist/` is gitignored and only `prepack` built it. / 新增 `prepare` 在安装时构建 `dist/`：Git 依赖安装得到与 npm 包一致的 bundle，而不是未构建源码；pnpm 11 默认拦截构建脚本，安装器会打印需要批准的 `allowBuilds` 条目。该缺口由 awesome-dsh-plugin 维护者在收录 PR 上指出。
