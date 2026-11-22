@@ -1,5 +1,12 @@
 # Changes / 更新记录
 
+## 0.4.2 · 2026-11-22 · compatibility range instead of a pinned peer / 兼容声明改为范围
+
+- Declares the supported host as `engines.dsh: ">=0.2.2-rc.1 <0.3.0"` instead of an exact `@deepseek-ai/dsh-tools` peer pin. DSH evaluates `engines.dsh` alone when it is present (otherwise every `@deepseek-ai/dsh*` peer), and prereleases participate in ranges — so one plugin release now spans the whole 0.2.2 rc line. 0.4.1 was rejected as `incompatible-version` on dsh 0.2.2-rc.5 because its peer pinned exactly 0.2.2-rc.3. / 用 `engines.dsh` 范围声明支持的宿主，替代把 `@deepseek-ai/dsh-tools` 钉成精确 peer。DSH 有 `engines.dsh` 时只按它判定（否则逐个校验 `@deepseek-ai/dsh*` peer），且预发布版参与范围匹配，因此一个版本覆盖 0.2.2 整条 rc 线。0.4.1 在 dsh 0.2.2-rc.5 上被判 `incompatible-version`，正是因为 peer 精确写成了 0.2.2-rc.3。
+- Verified on dsh 0.2.2-rc.5: 94/94 tests, 13/13 browser tests, typecheck, release verification and the pinned-host smoke. The same tree was previously verified on rc.1 and rc.3, and the rc.3 → rc.5 upgrade guides (`deepseek-refusal-code`, `web-search-deepseek-model-default`) change no surface this plugin uses. / 在 dsh 0.2.2-rc.5 上验证：94/94 测试、13/13 浏览器、类型检查、发布校验与锁定宿主冒烟；同一棵树此前在 rc.1、rc.3 验证过；rc.3→rc.5 的升级指南（拒答错误码、网页搜索默认）不涉及本插件使用的 surface。
+- `peerDependencies` use the same window as documentation; `@deepseek-ai/cordis` stays 4.1.0. / `peerDependencies` 改为同一窗口（仅作文档），`@deepseek-ai/cordis` 仍为 4.1.0。
+- No tool-contract or database-schema change. / 工具契约与数据库 schema 不变。
+
 ## 0.4.1 · 2026-11-14 · contract adapters on DSH 0.2.2-rc.3 / 契约适配落在 0.2.2-rc.3 上
 
 - Combines the 0.4.0 contract adapters with the host alignment to `@deepseek-ai/dsh@0.2.2-rc.3` / `dsh-tools@0.2.2-rc.3` (`@deepseek-ai/cordis` stays 4.1.0). / 把 0.4.0 的契约适配与 DSH 0.2.2-rc.3 / dsh-tools 0.2.2-rc.3 的宿主对齐合并发布（Cordis 仍为 4.1.0）。

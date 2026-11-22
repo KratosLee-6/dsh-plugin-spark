@@ -1,6 +1,16 @@
 # Test evidence / 测试证据
 
-Evidence date / 记录日期: 2026-11-14 (host alignment to DSH 0.2.2-rc.3); v0.3.0 growth relationships and earlier evidence retained below where still applicable. Version / 版本: 0.3.5.
+Evidence date / 记录日期: 2026-11-22 (host alignment to DSH 0.2.2-rc.5); v0.3.0 growth relationships and earlier evidence retained below where still applicable. Version / 版本: 0.4.2.
+
+## Host alignment / 宿主对齐 · 2026-11-22 · DSH 0.2.2-rc.5
+
+Local Windows verification on `@deepseek-ai/dsh@0.2.2-rc.5`, `@deepseek-ai/dsh-tools@0.2.2-rc.5` and `@deepseek-ai/cordis@4.1.0` (Node.js 24.15.0): 94/94 core+integration tests, 13/13 browser tests through the Edge channel, `tsc --noEmit`, `verify:release`, and the pinned-host smoke (fresh isolated profile, absolute-path patch, four synthetic Skills, HTTP 200). The installed `docs/upgrade-guide` for v0.2.2-rc.3 and v0.2.2-rc.4 was read: `deepseek-refusal-code` and `web-search-deepseek-model-default` change LLM refusal codes and the web-search provider default, neither touching a surface this plugin uses.
+
+The 0.4.1 release was reported by the plugin manager as `error.code = incompatible-version` on this runtime (`requirements: {"@deepseek-ai/dsh-tools":"0.2.2-rc.3"}`), because `evaluatePluginCompatibility` compares the running DSH version against `engines.dsh` when present and otherwise against every `@deepseek-ai/dsh*` peer, and prereleases participate in ranges. 0.4.2 therefore declares `engines.dsh: ">=0.2.2-rc.1 <0.3.0"`, which satisfies 0.2.2-rc.1, rc.3, rc.5, 0.2.2 final and 0.2.3, and rejects 0.3.0-rc.1.
+
+本地以 DSH 0.2.2-rc.5 回归：94/94 核心与集成测试、13/13 浏览器测试（Edge 通道）、`tsc --noEmit`、`verify:release`、锁定宿主冒烟（全新隔离 profile、绝对路径 patch、4 个合成技能、HTTP 200）全部通过。已读安装目录的 rc.3、rc.4 升级指南：拒答错误码与网页搜索默认提供方两项变更均不涉及本插件使用的 surface。
+
+0.4.1 在该运行时上被插件管理器判为 `incompatible-version`（`requirements: {"@deepseek-ai/dsh-tools":"0.2.2-rc.3"}`）：`evaluatePluginCompatibility` 在存在 `engines.dsh` 时按它比较，否则逐个比较 `@deepseek-ai/dsh*` peer，且预发布版参与范围。因此 0.4.2 改用 `engines.dsh: ">=0.2.2-rc.1 <0.3.0"`，覆盖 0.2.2-rc.1 / rc.3 / rc.5 / 0.2.2 正式版与 0.2.3，拒绝 0.3.0-rc.1。
 
 ## Host alignment / 宿主对齐 · 2026-11-14 · DSH 0.2.2-rc.3
 

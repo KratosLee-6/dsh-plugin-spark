@@ -38,7 +38,7 @@ Four original, synthetic examples are included. Import your own structured JSON 
 
 ### Load into DeepSeek Harness
 
-Compatibility target: **`@deepseek-ai/dsh@0.2.2-rc.3`**, **`@deepseek-ai/dsh-tools@0.2.2-rc.3`**, **`@deepseek-ai/cordis@4.1.0`** (from 2026-11-14; 0.2.2-rc.1 and 0.1.5-rc.2 were the previous targets and remain in the history). DSH is a developer preview; pin versions and retest upgrades. This repository is an independent community plugin, not an official DeepSeek product.
+Compatibility: **`@deepseek-ai/dsh >=0.2.2-rc.1 <0.3.0`**, declared as `engines.dsh`; `@deepseek-ai/cordis` 4.1.0. DSH evaluates `engines.dsh` first and ignores `peerDependencies` when it is present, and prereleases participate in ranges, so one plugin release spans the whole 0.2.2 rc line. Verified on 0.2.2-rc.1, rc.3 and rc.5. DSH is a developer preview: a new 0.3 line needs a new plugin release. This repository is an independent community plugin, not an official DeepSeek product.
 
 From this cloned and built repository:
 
