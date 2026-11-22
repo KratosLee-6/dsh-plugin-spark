@@ -74,40 +74,6 @@ test("cancellation, duplicate prevention and reduced-motion result", async ({
   await page.locator("#second").selectOption("research-synthesis");
   await expect(page.locator("#collide")).toBeDisabled();
 });
-test("mobile layout, gap disclosure and escaped imported content", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/");
-  await page.locator("#second").selectOption("release-story");
-  await page.locator("#collide").click();
-  await expect(page.locator("#result")).toContainText("verified-results");
-  await expect(page.locator("#result")).toContainText("A bridge is needed");
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= innerWidth,
-    ),
-  ).toBe(true);
-  await captureDocument(page, "docs/screenshots/mobile-en.png");
-  await page.locator("#import-open").click();
-  await page.locator("#import-json").fill(
-    JSON.stringify({
-      id: "ui-inert",
-      name: "<img src=x onerror=alert(1)>",
-      description: "Synthetic test",
-      inputs: ["brief"],
-      outputs: ["plan"],
-      steps: ["Keep as text"],
-      constraints: [],
-      tags: [],
-    }),
-  );
-  await page.getByRole("button", { name: "Import locally" }).click();
-  await expect(page.locator("#import-dialog")).not.toBeVisible();
-  await page.locator("#search").fill("<img");
-  await expect(page.locator(".skill-card")).toHaveCount(1);
-  await expect(page.locator(".skill-card img")).toHaveCount(0);
-});
 test("author-approved bridge closes a gap and saves with its note (v0.4.0)", async ({
   page,
 }) => {
@@ -143,6 +109,40 @@ test("author-approved bridge closes a gap and saves with its note (v0.4.0)", asy
   await expect(page.locator(".history-card").first()).toContainText(
     "Research Synthesis × Release Story",
   );
+});
+test("mobile layout, gap disclosure and escaped imported content", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  await page.locator("#second").selectOption("release-story");
+  await page.locator("#collide").click();
+  await expect(page.locator("#result")).toContainText("verified-results");
+  await expect(page.locator("#result")).toContainText("A bridge is needed");
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await captureDocument(page, "docs/screenshots/mobile-en.png");
+  await page.locator("#import-open").click();
+  await page.locator("#import-json").fill(
+    JSON.stringify({
+      id: "ui-inert",
+      name: "<img src=x onerror=alert(1)>",
+      description: "Synthetic test",
+      inputs: ["brief"],
+      outputs: ["plan"],
+      steps: ["Keep as text"],
+      constraints: [],
+      tags: [],
+    }),
+  );
+  await page.getByRole("button", { name: "Import locally" }).click();
+  await expect(page.locator("#import-dialog")).not.toBeVisible();
+  await page.locator("#search").fill("<img");
+  await expect(page.locator(".skill-card")).toHaveCount(1);
+  await expect(page.locator(".skill-card img")).toHaveCount(0);
 });
 test("keyboard dialog dismiss and save failure never reports success", async ({
   page,

@@ -1,6 +1,7 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { once } from "node:events";
 import { request } from "node:http";
+import { readFileSync } from "node:fs";
 import { SparkStore } from "../src/store.js";
 import { createStudio } from "../src/server.js";
 import { examples } from "../src/examples.js";
@@ -38,7 +39,7 @@ async function studio() {
       },
       body: JSON.stringify(body),
     });
-  return { store, url, post, token, page };
+  return { store, url, post, token, page, html };
 }
 it("serves only bundled assets with a restrictive CSP and completes the persistent loop", async () => {
   const { url, post, page } = await studio();
@@ -240,4 +241,12 @@ it("accepts in-budget decoded Markdown despite JSON escaping overhead", async ()
   expect(
     (await post("/api/import-preview", { markdown: markdown + '"' })).status,
   ).toBe(400);
+});
+it("renders the installed package version in the Studio header", async () => {
+  const { html } = await studio();
+  const { version } = JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+  ) as { version: string };
+  expect(html).toContain(`<span class="version">v${version}</span>`);
+  expect(html).not.toContain("{{SPARK_VERSION}}");
 });

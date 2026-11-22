@@ -26,6 +26,6 @@ Optional model suggestions must be opt-in, disclose provider/data boundaries and
 
 ## Current checkpoint / 当前节点
 
-v0.4.0 is the current plugin checkpoint: 94/94 core/integration tests and 13 browser tests pass locally, together with typecheck, release verification and a pinned-host smoke (DSH 0.2.2-rc.1, `dsh.bundle` install); the plugin is published to npm through trusted publishing. Contract adapters shipped in v0.4.0 as author-approved bridges. These results cover the plugin only, not the standalone application. The next feature milestone is plugin workspace portability (backup/restore); host experience remains undelivered.
+v0.4.3 is the current plugin checkpoint: the host requirement is declared as `engines.dsh: ">=0.2.2-rc.1 <0.3.0"` and was re-verified on DSH 0.2.2-rc.5; 95/95 core/integration tests and 13/13 browser tests pass locally, together with typecheck, release verification and a pinned-host smoke (`dsh.bundle` install); the plugin is published to npm through trusted publishing. Contract adapters shipped in v0.4.0 as author-approved bridges. These results cover the plugin only, not the standalone application. The next feature milestone is plugin workspace portability (backup/restore); host experience remains undelivered.
 
-当前插件节点为 v0.4.0：94/94 项核心/集成测试与 13 项浏览器测试本地通过，另有类型检查、发布校验与锁定宿主冒烟（DSH 0.2.2-rc.1、`dsh.bundle` 一键安装）；插件已通过 trusted publishing 发布到 npm。契约适配以「作者批准的桥」形态于 0.4.0 交付。该结果只覆盖插件，不代表主 App 验收。下一功能节点是插件数据迁移（备份恢复）；宿主体验尚未交付。
+当前插件节点为 v0.4.3：宿主要求声明为 `engines.dsh: ">=0.2.2-rc.1 <0.3.0"`，并已在 DSH 0.2.2-rc.5 上复验；95/95 项核心/集成测试与 13/13 项浏览器测试本地通过，另有类型检查、发布校验与锁定宿主冒烟（`dsh.bundle` 一键安装）；插件已通过 trusted publishing 发布到 npm。契约适配以「作者批准的桥」形态于 0.4.0 交付。该结果只覆盖插件，不代表主 App 验收。下一功能节点是插件数据迁移（备份恢复）；宿主体验尚未交付。

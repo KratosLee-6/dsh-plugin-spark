@@ -4,6 +4,7 @@ import {
   type ServerResponse,
 } from "node:http";
 import { readFile } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import {
@@ -15,6 +16,13 @@ import {
 } from "./core.js";
 import { previewMarkdown } from "./markdown.js";
 import type { SparkStore } from "./store.js";
+
+/** Version rendered in the Studio header, read from the installed package manifest. */
+const studioVersion = (
+  JSON.parse(
+    readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+  ) as { version: string }
+).version;
 
 async function body(req: IncomingMessage): Promise<Record<string, unknown>> {
   let size = 0;
@@ -83,7 +91,9 @@ export function createStudio(store: SparkStore) {
           "utf8",
         );
         if (file === "index.html")
-          content = content.replace("{{SPARK_TOKEN}}", secret);
+          content = content
+            .replace("{{SPARK_TOKEN}}", secret)
+            .replace("{{SPARK_VERSION}}", studioVersion);
         res.writeHead(200, { "Content-Type": `${mime}; charset=utf-8` });
         res.end(content);
         return;
